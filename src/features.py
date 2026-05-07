@@ -1,103 +1,169 @@
-import numpy as np
+"""
+features.py
+
+Optimized feature extraction pipeline for Chest X-ray classification.
+Updated for higher resolution (128x128) and improved texture scaling.
+
+USES:
+✔ HOG  -> edge/shape structure (Optimized for larger resolution)
+✔ LBP  -> multiscale texture patterns (Captures finer interstitial details)
+✔ Statistical grayscale features
+"""
+
 import cv2
+import numpy as np
+
 from scipy.stats import skew, kurtosis
-from skimage.feature import graycomatrix, graycoprops
+from skimage.feature import hog, local_binary_pattern
 
 
-# ── 1. Statistical Features (7) ────────────────────────────────
-def statistical_features(img_norm: np.ndarray) -> np.ndarray:
-    """Mean, variance, skewness, kurtosis, 25th/50th/75th percentiles."""
-    flat = img_norm.ravel()
-    return np.array([
-        flat.mean(),
-        flat.var(),
-        skew(flat),
-        kurtosis(flat),
-        np.percentile(flat, 25),
-        np.percentile(flat, 50),
-        np.percentile(flat, 75),
+# ─────────────────────────────────────────────
+# HOG FEATURES
+# ─────────────────────────────────────────────
+def hog_features(image_bgr: np.ndarray) -> np.ndarray:
+    """
+    Histogram of Oriented Gradients (HOG)
+    
+    Captures:
+    - Edges and lung structure
+    - Consolidation patterns
+    """
+
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+
+    # Increased pixels_per_cell to (16, 16) to maintain structural 
+    # context at the higher 128x128 resolution.
+    features = hog(
+        gray,
+        orientations=9,
+        pixels_per_cell=(16, 16), 
+        cells_per_block=(2, 2),
+        block_norm='L2-Hys',
+        visualize=False,
+        feature_vector=True
+    )
+
+    return features.astype(np.float32)
+
+
+# ─────────────────────────────────────────────
+# LBP FEATURES (MULTISCALE)
+# ─────────────────────────────────────────────
+def lbp_features(
+    image_bgr: np.ndarray,
+    n_bins: int = 64
+) -> np.ndarray:
+    """
+    Local Binary Pattern (LBP)
+    
+    Updated to capture texture at two different scales (R=1 and R=3)
+    to better identify subtle interstitial pneumonia patterns.
+    """
+
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    
+    all_hists = []
+    
+    # Extract textures at multiple scales: 
+    # Small scale (P=8, R=1) for fine detail, Large scale (P=24, R=3) for broader patterns.
+    for P, R in [(8, 1), (24, 3)]:
+        lbp = local_binary_pattern(
+            gray,
+            P=P,
+            R=R,
+            method='uniform'
+        )
+
+        hist, _ = np.histogram(
+            lbp.ravel(),
+            bins=n_bins,
+            range=(0, P + 2),
+            density=True
+        )
+        all_hists.append(hist)
+
+    return np.concatenate(all_hists).astype(np.float32)
+
+
+# ─────────────────────────────────────────────
+# STATISTICAL FEATURES
+# ─────────────────────────────────────────────
+def statistical_features(image_bgr: np.ndarray) -> np.ndarray:
+    """
+    Global grayscale statistics.
+    """
+
+    gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+    pixels = gray.astype(np.float32).ravel()
+
+    feats = [
+        np.mean(pixels),
+        np.std(pixels),
+        skew(pixels),
+        kurtosis(pixels),
+
+        np.percentile(pixels, 10),
+        np.percentile(pixels, 25),
+        np.percentile(pixels, 50),
+        np.percentile(pixels, 75),
+        np.percentile(pixels, 90),
+    ]
+
+    return np.array(feats, dtype=np.float32)
+
+
+# ─────────────────────────────────────────────
+# MASTER FEATURE EXTRACTOR
+# ─────────────────────────────────────────────
+def extract_features(image_bgr: np.ndarray) -> np.ndarray:
+    """
+    Concatenate HOG, Multiscale LBP, and Statistics into one vector.
+    """
+
+    hog_feat = hog_features(image_bgr)
+    lbp_feat = lbp_features(image_bgr)
+    stat_feat = statistical_features(image_bgr)
+
+    features = np.concatenate([
+        hog_feat,
+        lbp_feat,
+        stat_feat
     ])
 
-
-# ── 2. GLCM Texture Features (~50) ─────────────────────────────
-def glcm_features(img_norm: np.ndarray) -> np.ndarray:
-    """
-    Gray-Level Co-occurrence Matrix features.
-    4 properties × 4 angles × multiple distances = ~50 features.
-    """
-    img8 = (img_norm * 255).astype(np.uint8)
-    distances = [1, 2]
-    angles    = [0, np.pi/4, np.pi/2, 3*np.pi/4]
-    properties = ['contrast', 'homogeneity', 'energy', 'correlation']
-
-    glcm = graycomatrix(img8, distances=distances, angles=angles,
-                        symmetric=True, normed=True)
-
-    feats = []
-    for prop in properties:
-        feats.append(graycoprops(glcm, prop).ravel())
-
-    return np.concatenate(feats)
+    return features.astype(np.float32)
 
 
-# ── 3. Edge Features via Canny (2) ─────────────────────────────
-def edge_features(img_norm: np.ndarray) -> np.ndarray:
-    """Edge density and mean edge intensity using Canny detector."""
-    img8  = (img_norm * 255).astype(np.uint8)
-    edges = cv2.Canny(img8, threshold1=100, threshold2=200)
-
-    edge_density    = edges.mean() / 255.0
-    active_pixels   = edges[edges > 0]
-    mean_edge_intensity = active_pixels.mean() / 255.0 if len(active_pixels) > 0 else 0.0
-
-    return np.array([edge_density, mean_edge_intensity])
-
-
-# ── 4. Histogram Features (32) ─────────────────────────────────
-def histogram_features(img_norm: np.ndarray, bins: int = 32) -> np.ndarray:
-    """32-bin intensity histogram of normalized pixel values."""
-    hist, _ = np.histogram(img_norm.ravel(), bins=bins, range=(0.0, 1.0))
-    return hist.astype(np.float32) / (hist.sum() + 1e-8)  # normalize
-
-
-# ── Master Extractor (73 total) ─────────────────────────────────
-def extract_features(img_norm: np.ndarray) -> np.ndarray:
-    """
-    Extract all 73 features from a single normalized 64x64 image.
-    Breakdown:
-      - Statistical : 7
-      - GLCM        : 32  (4 props × 4 angles × 2 distances)
-      - Edge (Canny): 2
-      - Histogram   : 32
-    """
-    stat  = statistical_features(img_norm)   
-    glcm  = glcm_features(img_norm)          
-    edge  = edge_features(img_norm)          
-    hist  = histogram_features(img_norm)     
-
-    feature_vector = np.concatenate([stat, glcm, edge, hist])
-    return feature_vector
-
-
+# ─────────────────────────────────────────────
+# DATASET FEATURE MATRIX
+# ─────────────────────────────────────────────
 def build_feature_matrix(images: np.ndarray) -> np.ndarray:
     """
-    Build feature matrix from array of preprocessed images.
-    Args:
-        images: shape (N, 64, 64) float32 normalized images
-    Returns:
-        X: shape (N, n_features)
+    Convert image stack (N, H, W, 3) to feature matrix (N, n_features).
     """
+
     features = []
+    total = len(images)
+
     for i, img in enumerate(images):
         if i % 500 == 0:
-            print(f"  Extracting features: {i}/{len(images)}")
+            print(f"[INFO] Extracting features: {i}/{total}")
+
         features.append(extract_features(img))
-    return np.array(features)
+
+    return np.array(features, dtype=np.float32)
 
 
-if __name__ == "__main__":
-    # Quick test with a random image
-    dummy_img = np.random.rand(64, 64).astype(np.float32)
-    feats = extract_features(dummy_img)
-    print(f"Feature vector shape: {feats.shape}")
-    print(f"Expected 73 features, got: {len(feats)}")
+# ─────────────────────────────────────────────
+# TEST RUN
+# ─────────────────────────────────────────────
+if __name__ == '__main__':
+    # Test with the new 128x128 target resolution
+    dummy = np.random.randint(
+        0,
+        256,
+        (128, 128, 3),
+        dtype=np.uint8
+    )
+
+    f = extract_features(dummy)
+    print("Feature vector shape:", f.shape)

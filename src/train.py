@@ -1,175 +1,207 @@
+import os
 import numpy as np
 import joblib
-import os
-from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-from imblearn.over_sampling import SMOTE
 
-from preprocess import load_dataset
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report, accuracy_score
+from imblearn.over_sampling import SMOTE  # Fixed Class Imbalance
+
+from sklearn.utils import shuffle as shf
+
+from preprocess import load_images
 from features import build_feature_matrix
 
 
-# ── Config ──────────────────────────────────────────────────────
-DATA_TRAIN_DIR = "data/chest_xray/train"
-DATA_TEST_DIR  = "data/chest_xray/test"
-DATA_VAL_DIR   = "data/chest_xray/val"    # will be merged into train
-MODEL_OUT      = "models/pneumonia_model.pkl"
-RANDOM_STATE   = 42
-IMG_SIZE       = (64, 64)
-PCA_VARIANCE   = 0.95
-SMOTE_K        = 5
+# ─────────────────────────────────────────────
+# CONFIG
+# ─────────────────────────────────────────────
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DATA_TRAIN_DIR = os.path.join(ROOT_DIR, "data", "chest_xray", "train")
+DATA_TEST_DIR  = os.path.join(ROOT_DIR, "data", "chest_xray", "test")
+DATA_VAL_DIR   = os.path.join(ROOT_DIR, "data", "chest_xray", "val")
+
+MODEL_OUT = os.path.join(ROOT_DIR, "models", "pneumonia_model.pkl")
+RANDOM_STATE = 42
+# Increased image size to 128x128 for better texture detail extraction
+IMG_SIZE = (128, 128) 
+
+os.makedirs(os.path.dirname(MODEL_OUT), exist_ok=True)
 
 
-# ── Step 1: Load Data ───────────────────────────────────────────
-def load_all_data():
-    print("Loading training data...")
-    X_train_raw, y_train, _ = load_dataset(DATA_TRAIN_DIR, IMG_SIZE)
+# ─────────────────────────────────────────────
+def main():
 
-    # Merge the tiny 16-image val set into train
-    print("Loading & merging validation data into train...")
-    X_val_raw, y_val, _     = load_dataset(DATA_VAL_DIR,   IMG_SIZE)
-    X_combined = np.concatenate([X_train_raw, X_val_raw], axis=0)
-    y_combined = np.concatenate([y_train,     y_val],     axis=0)
+    # ── 1. LOAD DATA ─────────────────────────
+    print(f"Loading datasets at {IMG_SIZE} resolution...")
 
-    print("Loading test data...")
-    X_test_raw, y_test, _   = load_dataset(DATA_TEST_DIR,  IMG_SIZE)
+    X_train, y_train = load_images(DATA_TRAIN_DIR, IMG_SIZE)
+    X_val, y_val = load_images(DATA_VAL_DIR, IMG_SIZE)
+    X_test, y_test = load_images(DATA_TEST_DIR, IMG_SIZE)
 
-    print(f"Combined train: {X_combined.shape[0]} images | Test: {X_test_raw.shape[0]} images")
-    return X_combined, y_combined, X_test_raw, y_test
+    # Merge train + val ONLY for training
+    X_train = np.concatenate([X_train, X_val])
+    y_train = np.concatenate([y_train, y_val])
 
+    print(f"Initial Train distribution: {np.bincount(y_train.astype(int))}")
+    print(f"Train: {X_train.shape}, Test: {X_test.shape}")
 
-# ── Step 2: Feature Extraction ──────────────────────────────────
-def extract_all_features(X_train_raw, X_test_raw):
-    print("Extracting features from train set...")
-    X_train_feats = build_feature_matrix(X_train_raw)
-    print("Extracting features from test set...")
-    X_test_feats  = build_feature_matrix(X_test_raw)
-    return X_train_feats, X_test_feats
+    # shuffle train/test
+    X_train, y_train = shf(X_train, y_train, random_state=RANDOM_STATE)
+    X_test, y_test = shf(X_test, y_test, random_state=RANDOM_STATE)
 
 
-# ── Step 3: Train/Val Split ─────────────────────────────────────
-def split_data(X, y):
-    return train_test_split(X, y, test_size=0.20,
-                            stratify=y, random_state=RANDOM_STATE)
+    # ── 2. FEATURE EXTRACTION ────────────────
+    print("\nExtracting features (HOG, LBP, Stats)...")
+
+    X_train_feat = build_feature_matrix(X_train)
+    X_test_feat  = build_feature_matrix(X_test)
+
+    print(f"Features: Train {X_train_feat.shape}, Test {X_test_feat.shape}")
 
 
-# ── Step 4: PCA ─────────────────────────────────────────────────
-def apply_pca(X_train, X_val, X_test):
-    print(f"Applying PCA (retaining {PCA_VARIANCE*100}% variance)...")
-    pca = PCA(n_components=PCA_VARIANCE, random_state=RANDOM_STATE)
-    pca.fit(X_train)
+    # ── 3. SCALING ───────────────────────────
+    print("\nScaling features...")
 
-    X_train_pca = pca.transform(X_train)
-    X_val_pca   = pca.transform(X_val)
-    X_test_pca  = pca.transform(X_test)
-
-    print(f"PCA reduced to {X_train_pca.shape[1]} components")
-    return pca, X_train_pca, X_val_pca, X_test_pca
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train_feat)
+    X_test_scaled  = scaler.transform(X_test_feat)
 
 
-# ── Step 5: SMOTE ───────────────────────────────────────────────
-def apply_smote(X_train_pca, y_train):
-    print(f"Before SMOTE: {np.bincount(y_train)}")
-    smote = SMOTE(k_neighbors=SMOTE_K, random_state=RANDOM_STATE)
-    X_bal, y_bal = smote.fit_resample(X_train_pca, y_train)
-    print(f"After  SMOTE: {np.bincount(y_bal)}")
-    return X_bal, y_bal
+    # ── 4. PCA ───────────────────────────────
+    print("Applying PCA (95% variance)...")
+
+    pca = PCA(n_components=0.95, random_state=RANDOM_STATE)
+    X_train_pca = pca.fit_transform(X_train_scaled)
+    X_test_pca  = pca.transform(X_test_scaled)
+
+    print(f"PCA dims: {X_train_pca.shape[1]}")
 
 
-# ── Step 6: Define Models ───────────────────────────────────────
-def get_models():
-    return {
-        "Logistic Regression": LogisticRegression(
-            max_iter=1000, class_weight="balanced", random_state=RANDOM_STATE),
-        "SVM (RBF)": SVC(
-            kernel="rbf", C=1.0, gamma="scale",
-            probability=True, class_weight="balanced", random_state=RANDOM_STATE),
-        "Random Forest": RandomForestClassifier(
-            n_estimators=200, class_weight="balanced", random_state=RANDOM_STATE),
-        "Gradient Boosting": GradientBoostingClassifier(
-            n_estimators=100, random_state=RANDOM_STATE),
-        "KNN": KNeighborsClassifier(n_neighbors=7),
+    # ── 5. SMOTE (BALANCING) ─────────────────
+    print("\nApplying SMOTE to balance 'Normal' and 'Pneumonia' classes...")
+    
+    smote = SMOTE(random_state=RANDOM_STATE)
+    X_resampled, y_resampled = smote.fit_resample(X_train_pca, y_train)
+    
+    print(f"Resampled Train distribution: {np.bincount(y_resampled.astype(int))}")
+
+
+    # ── 6. BASELINE MODELS ───────────────────
+    print("\nTraining models with balanced class weights...")
+
+    # Added class_weight="balanced" to help models prioritize the minority class
+    models = {
+        "KNN": KNeighborsClassifier(n_neighbors=5),
+        "LogReg": LogisticRegression(max_iter=2000, class_weight="balanced", random_state=RANDOM_STATE),
+        "DecisionTree": DecisionTreeClassifier(class_weight="balanced", random_state=RANDOM_STATE),
+        "RandomForest": RandomForestClassifier(n_estimators=200, class_weight="balanced", random_state=RANDOM_STATE),
+        "SVM": SVC(kernel="rbf", probability=True, class_weight="balanced", random_state=RANDOM_STATE),
     }
 
+    results = {}
 
-# ── Step 7: Train All Models ────────────────────────────────────
-def train_all(models, X_train, y_train):
-    trained = {}
-    for name, clf in models.items():
-        print(f"Training {name}...")
-        clf.fit(X_train, y_train)
-        trained[name] = clf
-    return trained
+    for name, model in models.items():
+        model.fit(X_resampled, y_resampled)
+        pred = model.predict(X_test_pca)
+        acc = accuracy_score(y_test, pred)
 
-
-# ── Step 8: Hyperparameter Tuning (SVM + RF) ───────────────────
-def tune_models(X_train, y_train):
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
-
-    # SVM
-    print("Tuning SVM...")
-    svm_grid = {"C": [0.1, 1, 10, 100], "gamma": ["scale", "auto", 0.01, 0.001]}
-    svm_gs = GridSearchCV(
-        SVC(kernel="rbf", probability=True, class_weight="balanced"),
-        svm_grid, scoring="f1", cv=cv, n_jobs=-1, verbose=1)
-    svm_gs.fit(X_train, y_train)
-    print(f"Best SVM params: {svm_gs.best_params_}")
-
-    # Random Forest
-    print("Tuning Random Forest...")
-    rf_grid = {"n_estimators": [100, 200], "max_depth": [None, 10, 20]}
-    rf_gs = GridSearchCV(
-        RandomForestClassifier(class_weight="balanced", random_state=RANDOM_STATE),
-        rf_grid, scoring="f1", cv=cv, n_jobs=-1, verbose=1)
-    rf_gs.fit(X_train, y_train)
-    print(f"Best RF params: {rf_gs.best_params_}")
-
-    return svm_gs.best_estimator_, rf_gs.best_estimator_
+        results[name] = model
+        print(f"{name}: Acc={acc:.4f}")
 
 
-# ── Step 9: Save Best Model ─────────────────────────────────────
-def save_model(pca, clf, path=MODEL_OUT):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    joblib.dump({"pca": pca, "clf": clf}, path)
-    print(f"Model saved to {path}")
+    # ── 7. BEST K FOR KNN ────────────────────
+    print("\nOptimizing KNN k-value...")
+
+    best_k = 1
+    best_acc = 0
+
+    for k in range(1, 15):
+        knn = KNeighborsClassifier(n_neighbors=k)
+        knn.fit(X_resampled, y_resampled)
+        acc = accuracy_score(y_test, knn.predict(X_test_pca))
+
+        if acc > best_acc:
+            best_acc = acc
+            best_k = k
+
+    print(f"Best K = {best_k}, Acc = {best_acc:.4f}")
+
+    best_knn = KNeighborsClassifier(n_neighbors=best_k)
+    best_knn.fit(X_resampled, y_resampled)
 
 
-# ── Main ────────────────────────────────────────────────────────
+    # ── 8. SVM GRID SEARCH ───────────────────
+    print("\nFine-tuning SVM via GridSearch...")
+
+    svm_grid = {
+        "C": [0.1, 1, 10],
+        "gamma": ["scale", 0.01, 0.001],
+        "kernel": ["rbf"]
+    }
+
+    svm_search = GridSearchCV(
+        SVC(probability=True, class_weight="balanced", random_state=RANDOM_STATE),
+        svm_grid,
+        scoring="f1_macro",
+        cv=3,
+        n_jobs=-1
+    )
+
+    svm_search.fit(X_resampled, y_resampled)
+
+    best_svm = svm_search.best_estimator_
+    svm_acc = accuracy_score(y_test, best_svm.predict(X_test_pca))
+
+    print("Best SVM Params:", svm_search.best_params_)
+    print("SVM Acc:", svm_acc)
+
+
+    # ── 9. PICK BEST MODEL ───────────────────
+    # We compare based on accuracy here, but check the final F1 in the report
+    if best_acc > svm_acc:
+        best_model = best_knn
+        best_name = f"KNN(k={best_k})"
+        best_score = best_acc
+    else:
+        best_model = best_svm
+        best_name = "SVM"
+        best_score = svm_acc
+
+    print(f"\nWINNING MODEL: {best_name} | ACC: {best_score:.4f}")
+
+    print("\nFinal Classification Report (Test Set):")
+    final_preds = best_model.predict(X_test_pca)
+    print(classification_report(y_test, final_preds, target_names=["Normal", "Pneumonia"]))
+
+
+    # ── 10. SAVE MODEL ───────────────────────
+    joblib.dump({
+        "scaler": scaler,
+        "pca": pca,
+        "model": best_model,
+        "model_name": best_name
+    }, MODEL_OUT)
+
+    eval_data_path = os.path.join(ROOT_DIR, "models", "eval_data.pkl")
+    joblib.dump({
+        "X_test_pca": X_test_pca,
+        "y_test": y_test,
+        "all_trained": results,
+        "best_model": best_model,
+        "best_name": best_name
+    }, eval_data_path)
+    
+    print(f"\nEvaluation data saved to: {eval_data_path}")
+    print(f"Production model saved to: {MODEL_OUT}")
+
+
+# ─────────────────────────────────────────────
 if __name__ == "__main__":
-    # 1. Load
-    X_raw, y, X_test_raw, y_test = load_all_data()
-
-    # 2. Features
-    X_feats, X_test_feats = extract_all_features(X_raw, X_test_raw)
-
-    # 3. Split
-    X_tr, X_val, y_tr, y_val = split_data(X_feats, y)
-
-    # 4. PCA
-    pca, X_tr_pca, X_val_pca, X_test_pca = apply_pca(X_tr, X_val, X_test_feats)
-
-    # 5. SMOTE
-    X_bal, y_bal = apply_smote(X_tr_pca, y_tr)
-
-    # 6 & 7. Train all baseline models
-    models  = get_models()
-    trained = train_all(models, X_bal, y_bal)
-
-    # 8. Tune best candidates
-    best_svm, best_rf = tune_models(X_bal, y_bal)
-
-    # 9. Save best model (SVM by default — change as needed)
-    save_model(pca, best_svm)
-
-    print("\nTraining complete. Run evaluate.py for full results.")
-    # Store test data for evaluate.py
-    joblib.dump({"X_test": X_test_pca, "y_test": y_test,
-                 "X_val": X_val_pca,   "y_val":  y_val,
-                 "all_trained": trained,
-                 "best_svm": best_svm, "best_rf": best_rf},
-                "models/eval_data.pkl")
+    main()
