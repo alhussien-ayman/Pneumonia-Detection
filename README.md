@@ -9,6 +9,12 @@ Pneumonia is a severe respiratory infection that requires rapid, accurate diagno
 
 The **ClearLung** project provides an automated, interpretable classical machine learning pipeline designed to classify chest X-rays into **Normal** or **Pneumonia** categories. Built as a clinical decision-support tool, this system deliberately avoids deep learning "black boxes" in favor of deterministic computer vision and handcrafted feature engineering.
 
+### Dataset Structure
+The system utilizes a publicly available Kaggle dataset of Chest X-Ray Images. The data is organized into three standard splits (Training, Testing, and Validation), containing JPEG images labeled categorically as `NORMAL` or `PNEUMONIA`.
+
+![Dataset Structure](figures/00_Dataset_ٍStructure.png)
+*(Fig 1: Directory and hierarchical structure of the Chest X-Ray dataset)*
+
 ### The Clinical Challenge: Imbalance & Sensitivity
 Medical datasets are rarely balanced. Our dataset is heavily skewed towards Pneumonia cases, presenting a high risk of model bias. 
 
@@ -28,7 +34,7 @@ Rather than feeding raw pixels to a model, the pipeline isolates the actual regi
 * *(Note: Standard, non-mirrored spatial filters are strictly enforced during this step).*
 
 ![Preprocessing Pipeline](figures/02_preprocessing_pipeline.png)
-*(Fig 1: The preprocessing pipeline isolating the lung cavity)*
+*(Fig 2: The preprocessing pipeline isolating the lung cavity)*
 
 ### 2. Feature Extraction (8,140-Dimensional Vector)
 We extracted features that directly correlate with visual indicators of pneumonia:
@@ -36,7 +42,7 @@ We extracted features that directly correlate with visual indicators of pneumoni
 * **GLCM (Gray-Level Co-occurrence Matrix):** Extracts spatial textural features to detect cloudiness and opacities typical of fluid consolidation.
 
 ![HOG Feature Map](figures/03_hog_feature_map.png)
-*(Fig 2: HOG visualization extracting structural edges from the lung cavity)*
+*(Fig 3: HOG visualization extracting structural edges from the lung cavity)*
 
 **Ablation Study Note (PCA vs. Raw Features):** Initially, Principal Component Analysis (PCA) was used to compress the ~8,000 HOG features down to 50. However, this discarded 65% of the variance, causing accuracy to plummet to ~70%. We discarded PCA entirely—preserving the raw features boosted accuracy to ~89% and maximized clinical recall.
 
@@ -83,13 +89,13 @@ The Balanced Random Forest proved to be the most clinically viable model, achiev
 </table>
 
 ![Random Forest Evaluation](figures/06_clinical_evaluation_balanced_random_forest.png)
-*(Fig 3: Clinical metrics and confusion matrix for the Balanced Random Forest)*
+*(Fig 4: Clinical metrics and confusion matrix for the Balanced Random Forest)*
 
 ### Model Comparison
 While the SVM ($C=0.01$, RBF kernel) achieved a slightly higher specificity (86.32%), its sensitivity drop to 87.69% made it less ideal for a strict medical screening scenario where catching the disease is the top priority.
 
 ![Model Comparison](figures/08_model_comparison.png)
-*(Fig 4: Performance comparison across tested models)*
+*(Fig 5: Performance comparison across tested models)*
 
 ---
 
