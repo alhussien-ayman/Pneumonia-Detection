@@ -1,4 +1,4 @@
-# ClearLung: Pneumonia Detection from Chest X-Rays
+# PneumoVision: Pneumonia Detection from Chest X-Rays
 
 An interpretable, classical machine learning pipeline for binary pneumonia classification from medical images.
 
