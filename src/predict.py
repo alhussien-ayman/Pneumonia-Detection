@@ -1,138 +1,193 @@
-import cv2
-import numpy as np
-import joblib
-import json
-import csv
+"""
+predict.py
+----------
+Production inference script for chest X-ray pneumonia detection.
+
+Loads a saved model + scaler (+ optional PCA), preprocesses an input image,
+extracts features, and returns the prediction with confidence.
+
+Usage (CLI):
+    # Single image
+    python src/predict.py --image path/to/xray.jpeg \
+                          --models_dir models
+
+    # Batch — all images in a directory
+    python src/predict.py --image_dir path/to/images/ \
+                          --models_dir models \
+                          --output results/predictions.csv
+"""
+
 import os
-import sys
-from datetime import datetime
+import argparse
+import pickle
+import csv
+import numpy as np
 
-# Import updated extract_features from your modified features.py
-from features import extract_features
+from preprocess import preprocess_image, LABEL_NAMES
+from features import extract_hog_features, extract_glcm_features
 
-# ─────────────────────────────────────────────
-# CONFIG
-# ─────────────────────────────────────────────
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-MODEL_PATH   = os.path.join(ROOT_DIR, "models", "pneumonia_model.pkl")
-RESULTS_JSON = os.path.join(ROOT_DIR, "results", "results.json")
-RESULTS_CSV  = os.path.join(ROOT_DIR, "results", "results.csv")
 
-# Clinical priority threshold for Pneumonia probability
-THRESHOLD = 0.85 
-# Target size must match IMG_SIZE used in train.py
-IMG_SIZE = (128, 128) 
+# ---------------------------------------------------------------------------
+# Loading helpers
+# ---------------------------------------------------------------------------
 
-# ─────────────────────────────────────────────
-def predict_image(image_path: str, model_path: str = MODEL_PATH) -> dict:
+def _load(path: str):
+    with open(path, 'rb') as f:
+        return pickle.load(f)
+
+
+def load_pipeline(models_dir: str) -> dict:
     """
-    Full inference pipeline: Load -> Extract -> Scale -> PCA -> Predict.
+    Load the full inference pipeline (model, scaler, optional PCA).
+
+    Returns a dict with keys: 'model', 'scaler', 'pca' (may be None).
     """
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model not found: {model_path}. Run train.py first.")
+    rf_path  = os.path.join(models_dir, 'rf_model.pkl')
+    svm_path = os.path.join(models_dir, 'svm_model.pkl')
+    scaler_path = os.path.join(models_dir, 'scaler.pkl')
+    pca_path    = os.path.join(models_dir, 'pca.pkl')
 
-    # 1. Load Model Artefact (Now includes Scaler)
-    artefact = joblib.load(model_path)
-    scaler   = artefact["scaler"]
-    pca      = artefact["pca"]
-    model    = artefact["model"]
-
-    # 2. Load and Basic Preprocess (Resize)
-    image = cv2.imread(image_path)
-    if image is None:
-        raise ValueError(f"Could not read image: {image_path}")
-    
-    image_resized = cv2.resize(image, IMG_SIZE)
-
-    # 3. Feature Extraction (HOG + LBP + Stats)
-    # Ensure this matches the logic in your updated features.py
-    feats = extract_features(image_resized).reshape(1, -1)
-
-    # 4. Scaling (CRITICAL: Must use the scaler from training)
-    feats_scaled = scaler.transform(feats)
-
-    # 5. PCA Transformation
-    feats_pca = pca.transform(feats_scaled)
-
-    # 6. Predict
-    label_int = model.predict(feats_pca)[0]
-    # For KNN/SVM, we get probability for class 1 (Pneumonia)
-    proba = model.predict_proba(feats_pca)[0, 1]
-
-    # 7. Clinical Priority Logic
-    if label_int == 1:
-        if proba >= THRESHOLD:
-            priority = "HIGH PRIORITY — Escalate for immediate review"
-        else:
-            priority = "UNCERTAIN — Refer to clinician"
+    # Prefer Balanced RF; fall back to SVM
+    if os.path.exists(rf_path):
+        model = _load(rf_path)
+        model_name = 'Balanced Random Forest'
+    elif os.path.exists(svm_path):
+        model = _load(svm_path)
+        model_name = 'SVM C=0.01'
     else:
-        priority = "LOW RISK — Routine follow-up"
+        raise FileNotFoundError(
+            f'No model file found in {models_dir}. '
+            'Run train.py first.'
+        )
+
+    scaler = _load(scaler_path)
+    pca    = _load(pca_path) if os.path.exists(pca_path) else None
+
+    return {'model': model, 'scaler': scaler, 'pca': pca, 'model_name': model_name}
+
+
+# ---------------------------------------------------------------------------
+# Single-image prediction
+# ---------------------------------------------------------------------------
+
+def predict_image(img_path: str, pipeline: dict) -> dict:
+    """
+    Run the full pipeline on one image and return a prediction dict.
+
+    Args:
+        img_path: Path to a JPEG chest X-ray.
+        pipeline: Dict returned by load_pipeline().
+
+    Returns:
+        {
+            'path': str,
+            'label': 'Normal' | 'Pneumonia',
+            'label_int': 0 | 1,
+            'confidence': float,   # probability of predicted class
+            'normal_prob': float,
+            'pneumonia_prob': float,
+        }
+    """
+    model  = pipeline['model']
+    scaler = pipeline['scaler']
+    pca    = pipeline['pca']
+
+    # Preprocess
+    img = preprocess_image(img_path)
+    if img is None:
+        return {'path': img_path, 'error': 'Could not read image.'}
+
+    # Feature extraction
+    hog_feats  = extract_hog_features(img)
+    glcm_feats = extract_glcm_features(img)
+
+    # PCA (optional)
+    if pca is not None:
+        hog_feats = pca.transform(hog_feats.reshape(1, -1))[0]
+
+    # Combine + scale
+    combined = np.hstack([hog_feats, glcm_feats]).reshape(1, -1)
+    scaled   = scaler.transform(combined)
+
+    # Predict
+    label_int = int(model.predict(scaled)[0])
+    label     = LABEL_NAMES[label_int]
+
+    if hasattr(model, 'predict_proba'):
+        probs = model.predict_proba(scaled)[0]
+    else:
+        # SVC without probability: use decision_function sign only
+        df   = model.decision_function(scaled)[0]
+        prob = float(1 / (1 + np.exp(-df)))         # sigmoid approximation
+        probs = np.array([1 - prob, prob])
 
     return {
-        "image":           os.path.basename(image_path),
-        "label":           "Pneumonia" if label_int == 1 else "Normal",
-        "raw_prediction":  int(label_int),
-        "confidence":      round(float(proba), 4),
-        "priority":        priority,
-        "timestamp":       datetime.now().isoformat(),
+        'path':          img_path,
+        'label':         label,
+        'label_int':     label_int,
+        'confidence':    float(probs[label_int]),
+        'normal_prob':   float(probs[0]),
+        'pneumonia_prob': float(probs[1]),
     }
 
 
-# ── STORAGE UTILITIES ───────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# CLI entry-point
+# ---------------------------------------------------------------------------
 
-def save_results_json(results: list, path: str = RESULTS_JSON):
-    existing = []
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            try:
-                existing = json.load(f)
-            except json.JSONDecodeError:
-                existing = []
-    existing.extend(results)
-    with open(path, "w") as f:
-        json.dump(existing, f, indent=2)
-    print(f"Results appended to {path}")
-
-
-def save_results_csv(results: list, path: str = RESULTS_CSV):
-    write_header = not os.path.exists(path)
-    with open(path, "a", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=results[0].keys())
-        if write_header:
-            writer.writeheader()
-        writer.writerows(results)
-    print(f"Results appended to {path}")
+def parse_args():
+    p = argparse.ArgumentParser(description='Run pneumonia prediction on chest X-rays.')
+    grp = p.add_mutually_exclusive_group(required=True)
+    grp.add_argument('--image',     help='Path to a single JPEG image.')
+    grp.add_argument('--image_dir', help='Directory of JPEG images (batch mode).')
+    p.add_argument('--models_dir', default='models',
+                   help='Directory containing saved model and scaler.')
+    p.add_argument('--output', default=None,
+                   help='(Batch mode) Path to write CSV results.')
+    return p.parse_args()
 
 
-def print_result(result: dict):
-    print("\n" + "═"*55)
-    print(f"  IMAGE      : {result['image']}")
-    print(f"  PREDICTION : {result['label']}")
-    print(f"  CONFIDENCE : {result['confidence']*100:.1f}%")
-    print(f"  STATUS     : {result['priority']}")
-    print("═"*55)
+def main():
+    args     = parse_args()
+    pipeline = load_pipeline(args.models_dir)
+    print(f'Loaded model: {pipeline["model_name"]}')
+
+    if args.image:
+        result = predict_image(args.image, pipeline)
+        if 'error' in result:
+            print(f'Error: {result["error"]}')
+        else:
+            print(f'\nImage : {result["path"]}')
+            print(f'Result: {result["label"]} '
+                  f'(confidence: {result["confidence"] * 100:.1f} %)')
+            print(f'  Normal prob    : {result["normal_prob"] * 100:.1f} %')
+            print(f'  Pneumonia prob : {result["pneumonia_prob"] * 100:.1f} %')
+
+    else:
+        import glob
+        files = glob.glob(os.path.join(args.image_dir, '*.jpeg'))
+        if not files:
+            files = glob.glob(os.path.join(args.image_dir, '*.jpg'))
+        print(f'Found {len(files)} images in {args.image_dir}')
+
+        results = []
+        for i, f in enumerate(files):
+            res = predict_image(f, pipeline)
+            results.append(res)
+            label = res.get('label', 'ERROR')
+            conf  = res.get('confidence', 0)
+            print(f'  [{i+1}/{len(files)}] {os.path.basename(f):40s} → {label} ({conf*100:.1f} %)')
+
+        if args.output:
+            os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
+            keys = ['path', 'label', 'label_int', 'confidence',
+                    'normal_prob', 'pneumonia_prob']
+            with open(args.output, 'w', newline='') as fh:
+                writer = csv.DictWriter(fh, fieldnames=keys, extrasaction='ignore')
+                writer.writeheader()
+                writer.writerows(results)
+            print(f'\nResults saved → {args.output}')
 
 
-# ── CLI EXECUTION ────────────────────────────────────────────────
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python predict.py <image_path> [image_path2 ...]")
-        sys.exit(1)
-
-    image_paths = sys.argv[1:]
-    all_results = []
-
-    for path in image_paths:
-        if not os.path.exists(path):
-            print(f"File not found: {path}, skipping.")
-            continue
-        try:
-            result = predict_image(path)
-            print_result(result)
-            all_results.append(result)
-        except Exception as e:
-            print(f"Error processing {path}: {e}")
-
-    if all_results:
-        save_results_json(all_results)
-        save_results_csv(all_results)
+if __name__ == '__main__':
+    main()
