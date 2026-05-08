@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PneumoScan AI — Pneumonia Detection System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#hero" class="nav-logo">
+                <i class="fas fa-lungs"></i>
+                <span>PneumoScan AI</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#hero" class="nav-link active" data-section="hero">Home</a>
+                <a href="#upload" class="nav-link" data-section="upload">Detect</a>
+                <a href="#workflow" class="nav-link" data-section="workflow">Workflow</a>
+                <a href="#model" class="nav-link" data-section="model">Model</a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO ==================== -->
+    <section id="hero" class="hero">
+        <div class="hero-bg-effects">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+
+        <!-- ECG decorative line -->
+        <div class="ecg-line">
+            <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
+                <polyline points="0,30 100,30 120,30 140,10 155,50 170,5 185,55 200,30 220,30 400,30 420,30 440,10 455,50 470,5 485,55 500,30 520,30 700,30 720,30 740,10 755,50 770,5 785,55 800,30 820,30 1000,30 1020,30 1040,10 1055,50 1070,5 1085,55 1100,30 1120,30 1200,30"
+                    fill="none" stroke="rgba(0,212,255,0.15)" stroke-width="1.5"/>
+            </svg>
+        </div>
+
+        <div class="container hero-container">
+            <div class="hero-content">
+                <div class="hero-badge animate-fade-up">
+                    <i class="fas fa-microchip"></i>
+                    <span>Machine Learning Powered</span>
+                </div>
+                <h1 class="hero-title animate-fade-up delay-1">
+                    AI Pneumonia<br>
+                    <span class="gradient-text">Detection System</span>
+                </h1>
+                <p class="hero-subtitle animate-fade-up delay-2">
+                    Advanced chest X-ray analysis using Traditional Machine Learning with
+                    handcrafted feature extraction. Detect pneumonia with high accuracy and clinical reliability.
+                </p>
+                <div class="hero-actions animate-fade-up delay-3">
+                    <a href="#upload" class="btn btn-primary">
+                        <span>Upload X-ray</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="#workflow" class="btn btn-ghost">
+                        <span>View Pipeline</span>
+                        <i class="fas fa-diagram-project"></i>
+                    </a>
+                </div>
+                <div class="hero-stats animate-fade-up delay-4">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">5,863</span>
+                        <span class="hero-stat-label">X-rays Analyzed</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" id="heroAccuracy">94.2%</span>
+                        <span class="hero-stat-label">Accuracy</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">&lt;2s</span>
+                        <span class="hero-stat-label">Response Time</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual animate-fade-up delay-2">
+                <div class="xray-glow"></div>
+                <div class="float-dot" style="top:10%;left:5%;animation-delay:0s"></div>
+                <div class="float-dot" style="top:25%;right:0%;animation-delay:1.2s"></div>
+                <div class="float-dot" style="bottom:30%;left:0%;animation-delay:2.5s"></div>
+                <div class="float-dot" style="bottom:10%;right:5%;animation-delay:0.8s"></div>
+                <div class="float-dot" style="top:50%;left:-3%;animation-delay:3.2s"></div>
+
+                <svg viewBox="0 0 360 460" class="xray-scan" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="scanGlow" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0"/>
+                            <stop offset="50%" stop-color="#00d4ff" stop-opacity="0.6"/>
+                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                        </linearGradient>
+                        <radialGradient id="lungGlowL" cx="50%" cy="45%">
+                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07"/>
+                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                        </radialGradient>
+                        <radialGradient id="lungGlowR" cx="50%" cy="45%">
+                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07"/>
+                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                        </radialGradient>
+                        <filter id="softGlow">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Background -->
+                    <rect width="360" height="460" rx="6" fill="rgba(3,8,20,0.95)"/>
+
+                    <!-- Grid lines -->
+                    <g stroke="rgba(0,212,255,0.03)" stroke-width="0.5">
+                        <line x1="30" y1="46" x2="330" y2="46"/><line x1="30" y1="92" x2="330" y2="92"/>
+                        <line x1="30" y1="138" x2="330" y2="138"/><line x1="30" y1="184" x2="330" y2="184"/>
+                        <line x1="30" y1="230" x2="330" y2="230"/><line x1="30" y1="276" x2="330" y2="276"/>
+                        <line x1="30" y1="322" x2="330" y2="322"/><line x1="30" y1="368" x2="330" y2="368"/>
+                        <line x1="30" y1="414" x2="330" y2="414"/>
+                        <line x1="66" y1="20" x2="66" y2="440"/><line x1="132" y1="20" x2="132" y2="440"/>
+                        <line x1="198" y1="20" x2="198" y2="440"/><line x1="264" y1="20" x2="264" y2="440"/>
+                    </g>
+
+                    <!-- Corner brackets -->
+                    <g stroke="#00d4ff" stroke-width="2" fill="none" stroke-linecap="round">
+                        <polyline points="4,44 4,4 44,4"/>
+                        <polyline points="316,4 356,4 356,44"/>
+                        <polyline points="4,416 4,456 44,456"/>
+                        <polyline points="316,456 356,456 356,416"/>
+                    </g>
+
+                    <!-- Body silhouette -->
+                    <path d="M 115,35 Q 115,30 120,30 L 240,30 Q 245,30 245,35 L 252,75 Q 268,110 273,155 L 278,220 Q 283,290 275,345 Q 268,390 255,420 L 248,435 Q 244,440 238,440 L 122,440 Q 116,440 112,435 L 105,420 Q 92,390 85,345 Q 77,290 82,220 L 87,155 Q 92,110 108,75 Z"
+                          fill="rgba(180,210,240,0.03)" stroke="rgba(180,210,240,0.1)" stroke-width="0.7"/>
+
+                    <!-- Left lung field -->
+                    <ellipse cx="138" cy="225" rx="48" ry="115" fill="url(#lungGlowL)" stroke="rgba(0,212,255,0.18)" stroke-width="0.8"/>
+
+                    <!-- Right lung field -->
+                    <ellipse cx="222" cy="225" rx="44" ry="108" fill="url(#lungGlowR)" stroke="rgba(0,212,255,0.18)" stroke-width="0.8"/>
+
+                    <!-- Heart shadow -->
+                    <ellipse cx="198" cy="255" rx="28" ry="38" fill="rgba(180,150,160,0.03)" stroke="rgba(180,150,160,0.08)" stroke-width="0.6"/>
+
+                    <!-- Spine -->
+                    <line x1="180" y1="70" x2="180" y2="400" stroke="rgba(200,210,220,0.12)" stroke-width="2.5" stroke-linecap="round"/>
+                    <g fill="rgba(200,210,220,0.08)">
+                        <circle cx="180" cy="90" r="4"/><circle cx="180" cy="110" r="4"/>
+                        <circle cx="180" cy="130" r="4"/><circle cx="180" cy="150" r="4"/>
+                        <circle cx="180" cy="170" r="4"/><circle cx="180" cy="190" r="4"/>
+                        <circle cx="180" cy="210" r="4"/><circle cx="180" cy="230" r="4"/>
+                        <circle cx="180" cy="250" r="4"/><circle cx="180" cy="270" r="4"/>
+                        <circle cx="180" cy="290" r="4"/><circle cx="180" cy="310" r="4"/>
+                        <circle cx="180" cy="330" r="4"/><circle cx="180" cy="350" r="4"/>
+                    </g>
+
+                    <!-- Clavicles -->
+                    <path d="M 105,72 Q 140,64 178,70" stroke="rgba(200,210,220,0.14)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <path d="M 182,70 Q 220,64 255,72" stroke="rgba(200,210,220,0.14)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+                    <!-- Ribs -->
+                    <g stroke="rgba(200,210,220,0.06)" stroke-width="0.6" fill="none">
+                        <path d="M 100,100 Q 180,90 260,100"/>
+                        <path d="M 96,128 Q 180,115 264,128"/>
+                        <path d="M 93,156 Q 180,141 267,156"/>
+                        <path d="M 91,184 Q 180,167 269,184"/>
+                        <path d="M 90,212 Q 180,193 270,212"/>
+                        <path d="M 91,240 Q 180,219 269,240"/>
+                        <path d="M 93,268 Q 180,245 267,268"/>
+                        <path d="M 96,296 Q 180,271 264,296"/>
+                        <path d="M 100,324 Q 180,297 260,324"/>
+                        <path d="M 108,352 Q 180,323 252,352"/>
+                    </g>
+
+                    <!-- AI Detection box -->
+                    <rect x="92" y="140" width="92" height="130" rx="3" fill="none" stroke="#00d4ff" stroke-width="1" stroke-dasharray="5,3" opacity="0.5" filter="url(#softGlow)">
+                        <animate attributeName="opacity" values="0.25;0.65;0.25" dur="2.5s" repeatCount="indefinite"/>
+                    </rect>
+
+                    <!-- Detection label -->
+                    <g opacity="0.6">
+                        <rect x="92" y="129" width="72" height="12" rx="2" fill="rgba(0,212,255,0.15)"/>
+                        <text x="96" y="138" fill="#00d4ff" font-size="7" font-family="'JetBrains Mono', monospace">ROI DETECTED</text>
+                    </g>
+
+                    <!-- Crosshair -->
+                    <g stroke="rgba(0,212,255,0.25)" stroke-width="0.5">
+                        <line x1="172" y1="220" x2="188" y2="220"/>
+                        <line x1="180" y1="212" x2="180" y2="228"/>
+                    </g>
+
+                    <!-- Scan line -->
+                    <line x1="35" y1="30" x2="325" y2="30" stroke="#00d4ff" stroke-width="1.5" opacity="0.5">
+                        <animate attributeName="y1" values="30;430;30" dur="4s" repeatCount="indefinite"/>
+                        <animate attributeName="y2" values="30;430;30" dur="4s" repeatCount="indefinite"/>
+                    </line>
+                    <rect x="35" y="-8" width="290" height="16" fill="url(#scanGlow)" opacity="0.25">
+                        <animate attributeName="y" values="22;422;22" dur="4s" repeatCount="indefinite"/>
+                    </rect>
+
+                    <!-- Data overlays -->
+                    <text x="12" y="453" fill="rgba(0,212,255,0.35)" font-size="7" font-family="'JetBrains Mono', monospace">PA VIEW · 1024×1024</text>
+                    <text x="260" y="453" fill="rgba(0,212,255,0.35)" font-size="7" font-family="'JetBrains Mono', monospace">AI ANALYSIS</text>
+                    <text x="12" y="20" fill="rgba(0,212,255,0.25)" font-size="6" font-family="'JetBrains Mono', monospace">DICOM 1.2.840</text>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== UPLOAD ==================== -->
+    <section id="upload" class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag"><i class="fas fa-magnifying-glass-chart"></i> Detection</span>
+                <h2 class="section-title">Upload & Analyze</h2>
+                <p class="section-subtitle">Upload a chest X-ray image to get an instant AI-powered pneumonia diagnosis</p>
+            </div>
+
+            <div class="upload-grid">
+                <div class="upload-card glass-card reveal">
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone-content" id="dropContent">
+                            <div class="drop-zone-icon">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                            </div>
+                            <h3>Drop your X-ray here</h3>
+                            <p>or click to browse files</p>
+                            <span class="drop-zone-hint">Supports JPG, PNG — Max 10MB</span>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/jpg" hidden>
+                    </div>
+
+                    <div class="preview-area" id="previewArea">
+                        <div class="preview-header">
+                            <span><i class="fas fa-image"></i> Uploaded Image</span>
+                            <button class="btn-remove" id="removeBtn" aria-label="Remove image">
+                                <i class="fas fa-xmark"></i> Remove
+                            </button>
+                        </div>
+                        <div class="preview-image-wrapper">
+                            <img id="previewImg" src="" alt="X-ray preview">
+                        </div>
+                        <div class="preview-info">
+                            <span id="fileName"><i class="fas fa-file-medical"></i> —</span>
+                            <span id="fileSize">—</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-predict" id="predictBtn" disabled>
+                        <span>Analyze X-ray</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="result-card glass-card" id="resultCard">
+                    <div class="result-placeholder">
+                        <i class="fas fa-stethoscope"></i>
+                        <p>Upload an X-ray to see<br>the analysis results here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-content">
+                    <div class="loader">
+                        <div class="loader-ring"></div>
+                        <div class="loader-ring inner"></div>
+                        <div class="loader-dot"></div>
+                    </div>
+                    <p class="loading-text">Analyzing chest X-ray...</p>
+                    <span class="loading-step" id="loadingStep">Preprocessing image</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== WORKFLOW ==================== -->
+    <section id="workflow" class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag"><i class="fas fa-diagram-project"></i> Pipeline</span>
+                <h2 class="section-title">System Workflow</h2>
+                <p class="section-subtitle">The complete ML pipeline from raw image upload to final prediction result</p>
+            </div>
+
+            <div class="workflow-pipeline reveal">
+                <div class="workflow-step">
+                    <div class="workflow-number">01</div>
+                    <div class="workflow-icon-wrap">
+                        <i class="fas fa-cloud-arrow-up"></i>
+                    </div>
+                    <span class="workflow-label">Upload X-ray</span>
+                    <span class="workflow-desc">Patient chest radiograph</span>
+                </div>
+                <div class="workflow-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="workflow-step">
+                    <div class="workflow-number">02</div>
+                    <div class="workflow-icon-wrap">
+                        <i class="fas fa-sliders"></i>
+                    </div>
+                    <span class="workflow-label">Preprocessing</span>
+                    <span class="workflow-desc">CLAHE, resize, denoise</span>
+                </div>
+                <div class="workflow-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="workflow-step">
+                    <div class="workflow-number">03</div>
+                    <div class="workflow-icon-wrap">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <span class="workflow-label">Feature Extraction</span>
+                    <span class="workflow-desc">HOG, LBP, statistics</span>
+                </div>
+                <div class="workflow-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="workflow-step">
+                    <div class="workflow-number">04</div>
+                    <div class="workflow-icon-wrap">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <span class="workflow-label">ML Model</span>
+                    <span class="workflow-desc">Random Forest classifier</span>
+                </div>
+                <div class="workflow-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="workflow-step">
+                    <div class="workflow-number">05</div>
+                    <div class="workflow-icon-wrap">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <span class="workflow-label">Prediction</span>
+                    <span class="workflow-desc">Normal / Pneumonia</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MODEL ==================== -->
+    <section id="model" class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag"><i class="fas fa-flask"></i> Model</span>
+                <h2 class="section-title">About the Model</h2>
+                <p class="section-subtitle">Understanding the Traditional Machine Learning approach behind the detection system</p>
+            </div>
+
+            <div class="model-grid">
+                <div class="model-info glass-card reveal">
+                    <h3 class="model-info-title">
+                        <i class="fas fa-gear"></i>
+                        Traditional ML Approach
+                    </h3>
+                    <p class="model-info-desc">
+                        Unlike deep learning methods that automatically learn feature representations,
+                        this system employs a carefully designed Traditional Machine Learning pipeline
+                        with handcrafted feature extraction, offering interpretability and efficiency.
+                    </p>
+                    <div class="model-features-list">
+                        <div class="model-feature">
+                            <div class="model-feature-icon"><i class="fas fa-sun"></i></div>
+                            <div>
+                                <strong>CLAHE Enhancement</strong>
+                                <span>Contrast Limited Adaptive Histogram Equalization for optimal lung field visibility</span>
+                            </div>
+                        </div>
+                        <div class="model-feature">
+                            <div class="model-feature-icon"><i class="fas fa-border-all"></i></div>
+                            <div>
+                                <strong>HOG Features</strong>
+                                <span>Histogram of Oriented Gradients capturing structural edge and shape patterns</span>
+                            </div>
+                        </div>
+                        <div class="model-feature">
+                            <div class="model-feature-icon"><i class="fas fa-circle-nodes"></i></div>
+                            <div>
+                                <strong>LBP Texture</strong>
+                                <span>Local Binary Patterns extracting fine-grained texture descriptors from lung regions</span>
+                            </div>
+                        </div>
+                        <div class="model-feature">
+                            <div class="model-feature-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div>
+                                <strong>Statistical Features</strong>
+                                <span>Mean, std, skewness, kurtosis, and intensity histogram distributions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-stats reveal">
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+                        <div class="stat-value" data-value="94.2">0</div>
+                        <div class="stat-label">Accuracy</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-width="94.2"></div></div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon"><i class="fas fa-crosshairs"></i></div>
+                        <div class="stat-value" data-value="93.8">0</div>
+                        <div class="stat-label">Precision</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-width="93.8"></div></div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon"><i class="fas fa-wave-square"></i></div>
+                        <div class="stat-value" data-value="95.1">0</div>
+                        <div class="stat-label">Recall</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-width="95.1"></div></div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-value" data-value="94.4">0</div>
+                        <div class="stat-label">F1-Score</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" data-width="94.4"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <i class="fas fa-lungs"></i>
+                    <span>PneumoScan AI</span>
+                </div>
+                <p class="footer-tagline">AI Medical Imaging System</p>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-bottom">
+                <p class="footer-text">
+                    Pneumonia Detection from Chest X-rays Using Traditional Machine Learning
+                </p>
+                <p class="footer-copy">&copy; 2026 PneumoScan AI</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+    (function() {
+        'use strict';
+
+        /* ── Elements ── */
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const previewArea = document.getElementById('previewArea');
+        const dropContent = document.getElementById('dropContent');
+        const previewImg = document.getElementById('previewImg');
+        const fileNameEl = document.getElementById('fileName');
+        const fileSizeEl = document.getElementById('fileSize');
+        const removeBtn = document.getElementById('removeBtn');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultCard = document.getElementById('resultCard');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingStep = document.getElementById('loadingStep');
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        const navbar = document.getElementById('navbar');
+
+        let selectedFile = null;
+        let stepInterval = null;
+
+        /* ── Toast System ── */
+        function showToast(message, type) {
+            type = type || 'error';
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            var iconMap = { error: 'circle-exclamation', success: 'circle-check', info: 'circle-info' };
+            toast.innerHTML = '<i class="fas fa-' + (iconMap[type] || 'circle-info') + '"></i><span>' + message + '</span>';
+            container.appendChild(toast);
+            setTimeout(function() { toast.classList.add('show'); }, 20);
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() { toast.remove(); }, 350);
+            }, 3500);
+        }
+
+        /* ── Navigation ── */
+        navToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('open');
+            navToggle.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                navLinks.classList.remove('open');
+                navToggle.classList.remove('active');
+            });
+        });
+
+        window.addEventListener('scroll', function() {
+            var scrollY = window.scrollY;
+            if (scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            // Active link
+            var sections = document.querySelectorAll('section[id]');
+            sections.forEach(function(sec) {
+                var top = sec.offsetTop - 120;
+                var bottom = top + sec.offsetHeight;
+                var id = sec.getAttribute('id');
+                var link = document.querySelector('.nav-link[data-section="' + id + '"]');
+                if (link) {
+                    if (scrollY >= top && scrollY < bottom) {
+                        document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+                        link.classList.add('active');
+                    }
+                }
+            });
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        /* ── File Upload ── */
+        dropZone.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-remove')) return;
+            fileInput.click();
+        });
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', function() {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            var files = e.dataTransfer.files;
+            if (files.length > 0) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) handleFile(this.files[0]);
+        });
+
+        function handleFile(file) {
+            var validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (validTypes.indexOf(file.type) === -1) {
+                showToast('Please upload a JPG or PNG image', 'error');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('File size must be under 10MB', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                dropContent.style.display = 'none';
+                previewArea.style.display = 'block';
+                dropZone.classList.add('has-file');
+                fileNameEl.innerHTML = '<i class="fas fa-file-medical"></i> ' + file.name;
+                fileSizeEl.textContent = formatSize(file.size);
+                predictBtn.disabled = false;
+                // Reset result
+                resultCard.innerHTML = '<div class="result-placeholder"><i class="fas fa-stethoscope"></i><p>Upload an X-ray to see<br>the analysis results here</p></div>';
+                resultCard.classList.remove('result-show', 'status-normal', 'status-pneumonia');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        removeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            resetUpload();
+        });
+
+        function resetUpload() {
+            selectedFile = null;
+            fileInput.value = '';
+            previewImg.src = '';
+            previewArea.style.display = 'none';
+            dropContent.style.display = 'flex';
+            dropZone.classList.remove('has-file');
+            predictBtn.disabled = true;
+            resultCard.innerHTML = '<div class="result-placeholder"><i class="fas fa-stethoscope"></i><p>Upload an X-ray to see<br>the analysis results here</p></div>';
+            resultCard.classList.remove('result-show', 'status-normal', 'status-pneumonia');
+        }
+
+        /* ── Prediction ── */
+        predictBtn.addEventListener('click', function() {
+            if (!selectedFile) {
+                showToast('Please upload an X-ray image first', 'info');
+                return;
+            }
+            runPrediction();
+        });
+
+        function runPrediction() {
+            // Show loading
+            loadingOverlay.style.display = 'flex';
+            var steps = [
+                'Preprocessing image',
+                'Applying CLAHE enhancement',
+                'Extracting HOG features',
+                'Computing LBP texture',
+                'Running Random Forest classifier',
+                'Generating prediction result'
+            ];
+            var i = 0;
+            loadingStep.textContent = steps[0];
+            stepInterval = setInterval(function() {
+                i = (i + 1) % steps.length;
+                loadingStep.textContent = steps[i];
+            }, 700);
+
+            var formData = new FormData();
+            formData.append('file', selectedFile);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                clearInterval(stepInterval);
+                setTimeout(function() {
+                    loadingOverlay.style.display = 'none';
+                    if (data.error) {
+                        showToast(data.error, 'error');
+                    } else {
+                        showResult(data.prediction, data.confidence);
+                        showToast('Analysis complete!', 'success');
+                    }
+                }, 500);
+            })
+            .catch(function(err) {
+                clearInterval(stepInterval);
+                loadingOverlay.style.display = 'none';
+                showToast('Connection error. Is the backend server running?', 'error');
+                console.error(err);
+            });
+        }
+
+        function showResult(prediction, confidence) {
+            var isNormal = prediction === 'NORMAL';
+            var color = isNormal ? '#22c55e' : '#ef4444';
+            var circumference = 2 * Math.PI * 52;
+            var offset = circumference * (1 - confidence / 100);
+
+            resultCard.className = 'result-card glass-card result-show ' + (isNormal ? 'status-normal' : 'status-pneumonia');
+            resultCard.innerHTML = '' +
+                '<div class="result-header">' +
+                    '<span class="result-tag"><i class="fas fa-check-double"></i> Analysis Complete</span>' +
+                '</div>' +
+                '<div class="result-status">' +
+                    '<div class="status-icon-wrap" style="--status-color:' + color + '">' +
+                        '<i class="fas fa-' + (isNormal ? 'circle-check' : 'triangle-exclamation') + '"></i>' +
+                    '</div>' +
+                    '<span class="status-label" style="color:' + color + '">' + prediction + '</span>' +
+                '</div>' +
+                '<div class="result-confidence">' +
+                    '<svg class="confidence-svg" viewBox="0 0 120 120">' +
+                        '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>' +
+                        '<circle class="confidence-circle" cx="60" cy="60" r="52" fill="none" ' +
+                            'stroke="' + color + '" stroke-width="7" ' +
+                            'stroke-dasharray="' + circumference + '" stroke-dashoffset="' + circumference + '" ' +
+                            'stroke-linecap="round" transform="rotate(-90 60 60)"/>' +
+                        '<text x="60" y="57" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="Inter,sans-serif">' + confidence.toFixed(1) + '%</text>' +
+                        '<text x="60" y="73" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="7.5" font-family="\'JetBrains Mono\',monospace" letter-spacing="1">CONFIDENCE</text>' +
+                    '</svg>' +
+                '</div>' +
+                '<div class="result-details">' +
+                    '<div class="result-detail">' +
+                        '<span class="detail-label">Classification</span>' +
+                        '<span class="detail-value">' + prediction + '</span>' +
+                    '</div>' +
+                    '<div class="result-detail">' +
+                        '<span class="detail-label">Model</span>' +
+                        '<span class="detail-value">Random Forest</span>' +
+                    '</div>' +
+                    '<div class="result-detail">' +
+                        '<span class="detail-label">Features</span>' +
+                        '<span class="detail-value">HOG + LBP + Stats</span>' +
+                    '</div>' +
+                '</div>' +
+                '<p class="result-disclaimer">' +
+                    '<i class="fas fa-shield-halved"></i> ' +
+                    'AI-assisted analysis only. Not a substitute for professional medical diagnosis.' +
+                '</p>';
+
+            // Animate the confidence ring
+            setTimeout(function() {
+                var circle = resultCard.querySelector('.confidence-circle');
+                if (circle) {
+                    circle.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)';
+                    circle.style.strokeDashoffset = offset;
+                }
+            }, 100);
+        }
+
+        /* ── Scroll Reveal ── */
+        var revealObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    // Animate stat counters if in model section
+                    if (entry.target.closest('#model')) {
+                        animateCounters(entry.target);
+                    }
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(function(el) {
+            revealObserver.observe(el);
+        });
+
+        /* ── Counter Animation ── */
+        var countersAnimated = false;
+        function animateCounters(container) {
+            if (countersAnimated) return;
+            var values = container ? container.querySelectorAll('.stat-value[data-value]') : document.querySelectorAll('.stat-value[data-value]');
+            if (values.length === 0) return;
+            countersAnimated = true;
+            values.forEach(function(el) {
+                var target = parseFloat(el.dataset.value);
+                var duration = 2000;
+                var start = performance.now();
+                function update(now) {
+                    var elapsed = now - start;
+                    var progress = Math.min(elapsed / duration, 1);
+                    var eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = (target * eased).toFixed(1) + '%';
+                    if (progress < 1) requestAnimationFrame(update);
+                }
+                requestAnimationFrame(update);
+            });
+            // Animate bars
+            setTimeout(function() {
+                document.querySelectorAll('.stat-bar-fill').forEach(function(bar) {
+                    bar.style.width = bar.dataset.width + '%';
+                });
+            }, 200);
+        }
+
+        /* ── Load Metrics from Backend ── */
+        fetch('/metrics')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data && data.accuracy) {
+                    document.getElementById('heroAccuracy').textContent = data.accuracy + '%';
+                    document.querySelectorAll('.stat-value[data-value]').forEach(function(el) {
+                        var key = el.closest('.stat-card').querySelector('.stat-label').textContent.toLowerCase();
+                        if (key.indexOf('accuracy') !== -1) el.dataset.value = data.accuracy;
+                        else if (key.indexOf('precision') !== -1) el.dataset.value = data.precision;
+                        else if (key.indexOf('recall') !== -1) el.dataset.value = data.recall;
+                        else if (key.indexOf('f1') !== -1) el.dataset.value = data.f1;
+                    });
+                    document.querySelectorAll('.stat-bar-fill').forEach(function(bar) {
+                        var key = bar.closest('.stat-card').querySelector('.stat-label').textContent.toLowerCase();
+                        if (key.indexOf('accuracy') !== -1) bar.dataset.width = data.accuracy;
+                        else if (key.indexOf('precision') !== -1) bar.dataset.width = data.precision;
+                        else if (key.indexOf('recall') !== -1) bar.dataset.width = data.recall;
+                        else if (key.indexOf('f1') !== -1) bar.dataset.width = data.f1;
+                    });
+                }
+            })
+            .catch(function() { /* use defaults */ });
+
+    })();
+    </script>
+</body>
+</html>
