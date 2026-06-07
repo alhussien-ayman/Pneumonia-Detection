@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PneumoScan AI — Pneumonia Detection System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
     <!-- Toast Container -->
@@ -45,8 +49,9 @@
         <!-- ECG decorative line -->
         <div class="ecg-line">
             <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
-                <polyline points="0,30 100,30 120,30 140,10 155,50 170,5 185,55 200,30 220,30 400,30 420,30 440,10 455,50 470,5 485,55 500,30 520,30 700,30 720,30 740,10 755,50 770,5 785,55 800,30 820,30 1000,30 1020,30 1040,10 1055,50 1070,5 1085,55 1100,30 1120,30 1200,30"
-                    fill="none" stroke="rgba(0,212,255,0.15)" stroke-width="1.5"/>
+                <polyline
+                    points="0,30 100,30 120,30 140,10 155,50 170,5 185,55 200,30 220,30 400,30 420,30 440,10 455,50 470,5 485,55 500,30 520,30 700,30 720,30 740,10 755,50 770,5 785,55 800,30 820,30 1000,30 1020,30 1040,10 1055,50 1070,5 1085,55 1100,30 1120,30 1200,30"
+                    fill="none" stroke="rgba(0,212,255,0.15)" stroke-width="1.5" />
             </svg>
         </div>
 
@@ -81,7 +86,7 @@
                     </div>
                     <div class="hero-stat-divider"></div>
                     <div class="hero-stat">
-                        <span class="hero-stat-value" id="heroAccuracy">94.2%</span>
+                        <span class="hero-stat-value" id="heroAccuracy">89%</span>
                         <span class="hero-stat-label">Accuracy</span>
                     </div>
                     <div class="hero-stat-divider"></div>
@@ -103,119 +108,147 @@
                 <svg viewBox="0 0 360 460" class="xray-scan" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="scanGlow" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0"/>
-                            <stop offset="50%" stop-color="#00d4ff" stop-opacity="0.6"/>
-                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0" />
+                            <stop offset="50%" stop-color="#00d4ff" stop-opacity="0.6" />
+                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0" />
                         </linearGradient>
                         <radialGradient id="lungGlowL" cx="50%" cy="45%">
-                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07"/>
-                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07" />
+                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0" />
                         </radialGradient>
                         <radialGradient id="lungGlowR" cx="50%" cy="45%">
-                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07"/>
-                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+                            <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07" />
+                            <stop offset="100%" stop-color="#00d4ff" stop-opacity="0" />
                         </radialGradient>
                         <filter id="softGlow">
-                            <feGaussianBlur stdDeviation="2" result="blur"/>
-                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            <feGaussianBlur stdDeviation="2" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
                         </filter>
                     </defs>
 
                     <!-- Background -->
-                    <rect width="360" height="460" rx="6" fill="rgba(3,8,20,0.95)"/>
+                    <rect width="360" height="460" rx="6" fill="rgba(3,8,20,0.95)" />
 
                     <!-- Grid lines -->
                     <g stroke="rgba(0,212,255,0.03)" stroke-width="0.5">
-                        <line x1="30" y1="46" x2="330" y2="46"/><line x1="30" y1="92" x2="330" y2="92"/>
-                        <line x1="30" y1="138" x2="330" y2="138"/><line x1="30" y1="184" x2="330" y2="184"/>
-                        <line x1="30" y1="230" x2="330" y2="230"/><line x1="30" y1="276" x2="330" y2="276"/>
-                        <line x1="30" y1="322" x2="330" y2="322"/><line x1="30" y1="368" x2="330" y2="368"/>
-                        <line x1="30" y1="414" x2="330" y2="414"/>
-                        <line x1="66" y1="20" x2="66" y2="440"/><line x1="132" y1="20" x2="132" y2="440"/>
-                        <line x1="198" y1="20" x2="198" y2="440"/><line x1="264" y1="20" x2="264" y2="440"/>
+                        <line x1="30" y1="46" x2="330" y2="46" />
+                        <line x1="30" y1="92" x2="330" y2="92" />
+                        <line x1="30" y1="138" x2="330" y2="138" />
+                        <line x1="30" y1="184" x2="330" y2="184" />
+                        <line x1="30" y1="230" x2="330" y2="230" />
+                        <line x1="30" y1="276" x2="330" y2="276" />
+                        <line x1="30" y1="322" x2="330" y2="322" />
+                        <line x1="30" y1="368" x2="330" y2="368" />
+                        <line x1="30" y1="414" x2="330" y2="414" />
+                        <line x1="66" y1="20" x2="66" y2="440" />
+                        <line x1="132" y1="20" x2="132" y2="440" />
+                        <line x1="198" y1="20" x2="198" y2="440" />
+                        <line x1="264" y1="20" x2="264" y2="440" />
                     </g>
 
                     <!-- Corner brackets -->
                     <g stroke="#00d4ff" stroke-width="2" fill="none" stroke-linecap="round">
-                        <polyline points="4,44 4,4 44,4"/>
-                        <polyline points="316,4 356,4 356,44"/>
-                        <polyline points="4,416 4,456 44,456"/>
-                        <polyline points="316,456 356,456 356,416"/>
+                        <polyline points="4,44 4,4 44,4" />
+                        <polyline points="316,4 356,4 356,44" />
+                        <polyline points="4,416 4,456 44,456" />
+                        <polyline points="316,456 356,456 356,416" />
                     </g>
 
                     <!-- Body silhouette -->
-                    <path d="M 115,35 Q 115,30 120,30 L 240,30 Q 245,30 245,35 L 252,75 Q 268,110 273,155 L 278,220 Q 283,290 275,345 Q 268,390 255,420 L 248,435 Q 244,440 238,440 L 122,440 Q 116,440 112,435 L 105,420 Q 92,390 85,345 Q 77,290 82,220 L 87,155 Q 92,110 108,75 Z"
-                          fill="rgba(180,210,240,0.03)" stroke="rgba(180,210,240,0.1)" stroke-width="0.7"/>
+                    <path
+                        d="M 115,35 Q 115,30 120,30 L 240,30 Q 245,30 245,35 L 252,75 Q 268,110 273,155 L 278,220 Q 283,290 275,345 Q 268,390 255,420 L 248,435 Q 244,440 238,440 L 122,440 Q 116,440 112,435 L 105,420 Q 92,390 85,345 Q 77,290 82,220 L 87,155 Q 92,110 108,75 Z"
+                        fill="rgba(180,210,240,0.03)" stroke="rgba(180,210,240,0.1)" stroke-width="0.7" />
 
                     <!-- Left lung field -->
-                    <ellipse cx="138" cy="225" rx="48" ry="115" fill="url(#lungGlowL)" stroke="rgba(0,212,255,0.18)" stroke-width="0.8"/>
+                    <ellipse cx="138" cy="225" rx="48" ry="115" fill="url(#lungGlowL)" stroke="rgba(0,212,255,0.18)"
+                        stroke-width="0.8" />
 
                     <!-- Right lung field -->
-                    <ellipse cx="222" cy="225" rx="44" ry="108" fill="url(#lungGlowR)" stroke="rgba(0,212,255,0.18)" stroke-width="0.8"/>
+                    <ellipse cx="222" cy="225" rx="44" ry="108" fill="url(#lungGlowR)" stroke="rgba(0,212,255,0.18)"
+                        stroke-width="0.8" />
 
                     <!-- Heart shadow -->
-                    <ellipse cx="198" cy="255" rx="28" ry="38" fill="rgba(180,150,160,0.03)" stroke="rgba(180,150,160,0.08)" stroke-width="0.6"/>
+                    <ellipse cx="198" cy="255" rx="28" ry="38" fill="rgba(180,150,160,0.03)"
+                        stroke="rgba(180,150,160,0.08)" stroke-width="0.6" />
 
                     <!-- Spine -->
-                    <line x1="180" y1="70" x2="180" y2="400" stroke="rgba(200,210,220,0.12)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="180" y1="70" x2="180" y2="400" stroke="rgba(200,210,220,0.12)" stroke-width="2.5"
+                        stroke-linecap="round" />
                     <g fill="rgba(200,210,220,0.08)">
-                        <circle cx="180" cy="90" r="4"/><circle cx="180" cy="110" r="4"/>
-                        <circle cx="180" cy="130" r="4"/><circle cx="180" cy="150" r="4"/>
-                        <circle cx="180" cy="170" r="4"/><circle cx="180" cy="190" r="4"/>
-                        <circle cx="180" cy="210" r="4"/><circle cx="180" cy="230" r="4"/>
-                        <circle cx="180" cy="250" r="4"/><circle cx="180" cy="270" r="4"/>
-                        <circle cx="180" cy="290" r="4"/><circle cx="180" cy="310" r="4"/>
-                        <circle cx="180" cy="330" r="4"/><circle cx="180" cy="350" r="4"/>
+                        <circle cx="180" cy="90" r="4" />
+                        <circle cx="180" cy="110" r="4" />
+                        <circle cx="180" cy="130" r="4" />
+                        <circle cx="180" cy="150" r="4" />
+                        <circle cx="180" cy="170" r="4" />
+                        <circle cx="180" cy="190" r="4" />
+                        <circle cx="180" cy="210" r="4" />
+                        <circle cx="180" cy="230" r="4" />
+                        <circle cx="180" cy="250" r="4" />
+                        <circle cx="180" cy="270" r="4" />
+                        <circle cx="180" cy="290" r="4" />
+                        <circle cx="180" cy="310" r="4" />
+                        <circle cx="180" cy="330" r="4" />
+                        <circle cx="180" cy="350" r="4" />
                     </g>
 
                     <!-- Clavicles -->
-                    <path d="M 105,72 Q 140,64 178,70" stroke="rgba(200,210,220,0.14)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                    <path d="M 182,70 Q 220,64 255,72" stroke="rgba(200,210,220,0.14)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <path d="M 105,72 Q 140,64 178,70" stroke="rgba(200,210,220,0.14)" stroke-width="1.5" fill="none"
+                        stroke-linecap="round" />
+                    <path d="M 182,70 Q 220,64 255,72" stroke="rgba(200,210,220,0.14)" stroke-width="1.5" fill="none"
+                        stroke-linecap="round" />
 
                     <!-- Ribs -->
                     <g stroke="rgba(200,210,220,0.06)" stroke-width="0.6" fill="none">
-                        <path d="M 100,100 Q 180,90 260,100"/>
-                        <path d="M 96,128 Q 180,115 264,128"/>
-                        <path d="M 93,156 Q 180,141 267,156"/>
-                        <path d="M 91,184 Q 180,167 269,184"/>
-                        <path d="M 90,212 Q 180,193 270,212"/>
-                        <path d="M 91,240 Q 180,219 269,240"/>
-                        <path d="M 93,268 Q 180,245 267,268"/>
-                        <path d="M 96,296 Q 180,271 264,296"/>
-                        <path d="M 100,324 Q 180,297 260,324"/>
-                        <path d="M 108,352 Q 180,323 252,352"/>
+                        <path d="M 100,100 Q 180,90 260,100" />
+                        <path d="M 96,128 Q 180,115 264,128" />
+                        <path d="M 93,156 Q 180,141 267,156" />
+                        <path d="M 91,184 Q 180,167 269,184" />
+                        <path d="M 90,212 Q 180,193 270,212" />
+                        <path d="M 91,240 Q 180,219 269,240" />
+                        <path d="M 93,268 Q 180,245 267,268" />
+                        <path d="M 96,296 Q 180,271 264,296" />
+                        <path d="M 100,324 Q 180,297 260,324" />
+                        <path d="M 108,352 Q 180,323 252,352" />
                     </g>
 
                     <!-- AI Detection box -->
-                    <rect x="92" y="140" width="92" height="130" rx="3" fill="none" stroke="#00d4ff" stroke-width="1" stroke-dasharray="5,3" opacity="0.5" filter="url(#softGlow)">
-                        <animate attributeName="opacity" values="0.25;0.65;0.25" dur="2.5s" repeatCount="indefinite"/>
+                    <rect x="92" y="140" width="92" height="130" rx="3" fill="none" stroke="#00d4ff" stroke-width="1"
+                        stroke-dasharray="5,3" opacity="0.5" filter="url(#softGlow)">
+                        <animate attributeName="opacity" values="0.25;0.65;0.25" dur="2.5s" repeatCount="indefinite" />
                     </rect>
 
                     <!-- Detection label -->
                     <g opacity="0.6">
-                        <rect x="92" y="129" width="72" height="12" rx="2" fill="rgba(0,212,255,0.15)"/>
-                        <text x="96" y="138" fill="#00d4ff" font-size="7" font-family="'JetBrains Mono', monospace">ROI DETECTED</text>
+                        <rect x="92" y="129" width="72" height="12" rx="2" fill="rgba(0,212,255,0.15)" />
+                        <text x="96" y="138" fill="#00d4ff" font-size="7" font-family="'JetBrains Mono', monospace">ROI
+                            DETECTED</text>
                     </g>
 
                     <!-- Crosshair -->
                     <g stroke="rgba(0,212,255,0.25)" stroke-width="0.5">
-                        <line x1="172" y1="220" x2="188" y2="220"/>
-                        <line x1="180" y1="212" x2="180" y2="228"/>
+                        <line x1="172" y1="220" x2="188" y2="220" />
+                        <line x1="180" y1="212" x2="180" y2="228" />
                     </g>
 
                     <!-- Scan line -->
                     <line x1="35" y1="30" x2="325" y2="30" stroke="#00d4ff" stroke-width="1.5" opacity="0.5">
-                        <animate attributeName="y1" values="30;430;30" dur="4s" repeatCount="indefinite"/>
-                        <animate attributeName="y2" values="30;430;30" dur="4s" repeatCount="indefinite"/>
+                        <animate attributeName="y1" values="30;430;30" dur="4s" repeatCount="indefinite" />
+                        <animate attributeName="y2" values="30;430;30" dur="4s" repeatCount="indefinite" />
                     </line>
                     <rect x="35" y="-8" width="290" height="16" fill="url(#scanGlow)" opacity="0.25">
-                        <animate attributeName="y" values="22;422;22" dur="4s" repeatCount="indefinite"/>
+                        <animate attributeName="y" values="22;422;22" dur="4s" repeatCount="indefinite" />
                     </rect>
 
                     <!-- Data overlays -->
-                    <text x="12" y="453" fill="rgba(0,212,255,0.35)" font-size="7" font-family="'JetBrains Mono', monospace">PA VIEW · 1024×1024</text>
-                    <text x="260" y="453" fill="rgba(0,212,255,0.35)" font-size="7" font-family="'JetBrains Mono', monospace">AI ANALYSIS</text>
-                    <text x="12" y="20" fill="rgba(0,212,255,0.25)" font-size="6" font-family="'JetBrains Mono', monospace">DICOM 1.2.840</text>
+                    <text x="12" y="453" fill="rgba(0,212,255,0.35)" font-size="7"
+                        font-family="'JetBrains Mono', monospace">PA VIEW · 1024×1024</text>
+                    <text x="260" y="453" fill="rgba(0,212,255,0.35)" font-size="7"
+                        font-family="'JetBrains Mono', monospace">AI ANALYSIS</text>
+                    <text x="12" y="20" fill="rgba(0,212,255,0.25)" font-size="6"
+                        font-family="'JetBrains Mono', monospace">DICOM 1.2.840</text>
                 </svg>
             </div>
         </div>
@@ -227,7 +260,8 @@
             <div class="section-header reveal">
                 <span class="section-tag"><i class="fas fa-diagram-project"></i> Pipeline</span>
                 <h2 class="section-title">System Workflow</h2>
-                <p class="section-subtitle">The complete ML pipeline from raw image upload to final prediction result</p>
+                <p class="section-subtitle">The complete ML pipeline from raw image upload to final prediction result
+                </p>
             </div>
 
             <div class="workflow-pipeline reveal">
@@ -285,7 +319,8 @@
             <div class="section-header reveal">
                 <span class="section-tag"><i class="fas fa-flask"></i> Model</span>
                 <h2 class="section-title">About the Model</h2>
-                <p class="section-subtitle">Understanding the Traditional Machine Learning approach behind the detection system</p>
+                <p class="section-subtitle">Understanding the Traditional Machine Learning approach behind the detection
+                    system</p>
             </div>
 
             <div class="model-grid" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto;">
@@ -304,21 +339,24 @@
                             <div class="model-feature-icon"><i class="fas fa-sun"></i></div>
                             <div>
                                 <strong>CLAHE Enhancement</strong>
-                                <span>Contrast Limited Adaptive Histogram Equalization for optimal lung field visibility</span>
+                                <span>Contrast Limited Adaptive Histogram Equalization for optimal lung field
+                                    visibility</span>
                             </div>
                         </div>
                         <div class="model-feature">
                             <div class="model-feature-icon"><i class="fas fa-border-all"></i></div>
                             <div>
                                 <strong>HOG Features</strong>
-                                <span>Histogram of Oriented Gradients capturing structural edge and shape patterns</span>
+                                <span>Histogram of Oriented Gradients capturing structural edge and shape
+                                    patterns</span>
                             </div>
                         </div>
                         <div class="model-feature">
                             <div class="model-feature-icon"><i class="fas fa-circle-nodes"></i></div>
                             <div>
                                 <strong>LBP Texture</strong>
-                                <span>Local Binary Patterns extracting fine-grained texture descriptors from lung regions</span>
+                                <span>Local Binary Patterns extracting fine-grained texture descriptors from lung
+                                    regions</span>
                             </div>
                         </div>
                         <div class="model-feature">
@@ -356,82 +394,83 @@
 
     <!-- ==================== JAVASCRIPT ==================== -->
     <script>
-    (function() {
-        'use strict';
+        (function () {
+            'use strict';
 
-        var navToggle = document.getElementById('navToggle');
-        var navLinks  = document.getElementById('navLinks');
-        var navbar    = document.getElementById('navbar');
+            var navToggle = document.getElementById('navToggle');
+            var navLinks = document.getElementById('navLinks');
+            var navbar = document.getElementById('navbar');
 
-        /* ── Toast System ── */
-        function showToast(message, type) {
-            type = type || 'info';
-            var container = document.getElementById('toast-container');
-            var toast = document.createElement('div');
-            toast.className = 'toast toast-' + type;
-            var iconMap = { error: 'circle-exclamation', success: 'circle-check', info: 'circle-info' };
-            toast.innerHTML = '<i class="fas fa-' + (iconMap[type] || 'circle-info') + '"></i><span>' + message + '</span>';
-            container.appendChild(toast);
-            setTimeout(function() { toast.classList.add('show'); }, 20);
-            setTimeout(function() {
-                toast.classList.remove('show');
-                setTimeout(function() { toast.remove(); }, 350);
-            }, 3500);
-        }
+            /* ── Toast System ── */
+            function showToast(message, type) {
+                type = type || 'info';
+                var container = document.getElementById('toast-container');
+                var toast = document.createElement('div');
+                toast.className = 'toast toast-' + type;
+                var iconMap = { error: 'circle-exclamation', success: 'circle-check', info: 'circle-info' };
+                toast.innerHTML = '<i class="fas fa-' + (iconMap[type] || 'circle-info') + '"></i><span>' + message + '</span>';
+                container.appendChild(toast);
+                setTimeout(function () { toast.classList.add('show'); }, 20);
+                setTimeout(function () {
+                    toast.classList.remove('show');
+                    setTimeout(function () { toast.remove(); }, 350);
+                }, 3500);
+            }
 
-        /* ── Navigation ── */
-        navToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('open');
-            navToggle.classList.toggle('active');
-        });
-
-        document.querySelectorAll('.nav-link').forEach(function(link) {
-            link.addEventListener('click', function() {
-                navLinks.classList.remove('open');
-                navToggle.classList.remove('active');
+            /* ── Navigation ── */
+            navToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('open');
+                navToggle.classList.toggle('active');
             });
-        });
 
-        window.addEventListener('scroll', function() {
-            navbar.classList.toggle('scrolled', window.scrollY > 50);
+            document.querySelectorAll('.nav-link').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    navLinks.classList.remove('open');
+                    navToggle.classList.remove('active');
+                });
+            });
 
-            // Highlight active section link
-            var sections = document.querySelectorAll('section[id]');
-            sections.forEach(function(sec) {
-                var top = sec.offsetTop - 120;
-                var bottom = top + sec.offsetHeight;
-                var id = sec.getAttribute('id');
-                var link = document.querySelector('.nav-link[data-section="' + id + '"]');
-                if (link) {
-                    if (window.scrollY >= top && window.scrollY < bottom) {
-                        document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
-                        link.classList.add('active');
+            window.addEventListener('scroll', function () {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+
+                // Highlight active section link
+                var sections = document.querySelectorAll('section[id]');
+                sections.forEach(function (sec) {
+                    var top = sec.offsetTop - 120;
+                    var bottom = top + sec.offsetHeight;
+                    var id = sec.getAttribute('id');
+                    var link = document.querySelector('.nav-link[data-section="' + id + '"]');
+                    if (link) {
+                        if (window.scrollY >= top && window.scrollY < bottom) {
+                            document.querySelectorAll('.nav-link').forEach(function (l) { l.classList.remove('active'); });
+                            link.classList.add('active');
+                        }
                     }
-                }
+                });
             });
-        });
 
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(function(a) {
-            a.addEventListener('click', function(e) {
-                e.preventDefault();
-                var target = document.querySelector(this.getAttribute('href'));
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+                a.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var target = document.querySelector(this.getAttribute('href'));
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
             });
-        });
 
-        /* ── Scroll Reveal ── */
-        var revealObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('revealed');
-                }
-            });
-        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+            /* ── Scroll Reveal ── */
+            var revealObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
 
-        document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+            document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
 
-    })();
+        })();
     </script>
 </body>
+
 </html>

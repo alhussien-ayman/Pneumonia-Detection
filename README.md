@@ -99,6 +99,24 @@ While the SVM ($C=0.01$, RBF kernel) achieved a slightly higher specificity (86.
 
 ---
 
+## Web Deployment
+
+To make our models accessible and easy to use, we have deployed the top-performing models to a user-friendly web application. The website provides a seamless interface for medical professionals and users to upload chest X-ray images and receive instant diagnostic predictions.
+
+### Website Features
+* **Intuitive Upload Interface**: A simple drag-and-drop or file selection area for uploading chest X-rays.
+* **Instant Clinical Predictions**: Real-time classification of uploaded X-rays as either Normal or Pneumonia.
+* **Model Selection**: The ability to choose between our trained classical ML models (e.g., Balanced Random Forest, SVM) for inference.
+* **Secure and Fast**: Designed to handle images efficiently while maintaining patient data privacy (by processing locally or via secure endpoints).
+
+![Upload, Confidence, and Preprocessing Steps](figures/website_placeholder_1.png)
+*(Fig 6: The upload section showing the model's confidence and the preprocessing steps)*
+
+![Model Metrics Information](figures/website_placeholder_2.png)
+*(Fig 7: Detailed information regarding the model metrics and performance)*
+
+---
+
 ## Repository Structure
 
 ```text
