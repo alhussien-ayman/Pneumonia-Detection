@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PneumoScan AI — Pneumonia Detection System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
@@ -22,7 +24,7 @@
             </a>
             <div class="nav-links" id="navLinks">
                 <a href="#hero" class="nav-link active" data-section="hero">Home</a>
-                <a href="#upload" class="nav-link" data-section="upload">Detect</a>
+                <a href="/detect" class="nav-link">Detect</a>
                 <a href="#workflow" class="nav-link" data-section="workflow">Workflow</a>
                 <a href="#model" class="nav-link" data-section="model">Model</a>
             </div>
@@ -63,8 +65,8 @@
                     handcrafted feature extraction. Detect pneumonia with high accuracy and clinical reliability.
                 </p>
                 <div class="hero-actions animate-fade-up delay-3">
-                    <a href="#upload" class="btn btn-primary">
-                        <span>Upload X-ray</span>
+                    <a href="/detect" class="btn btn-primary">
+                        <span>Get Started</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
                     <a href="#workflow" class="btn btn-ghost">
@@ -219,74 +221,6 @@
         </div>
     </section>
 
-    <!-- ==================== UPLOAD ==================== -->
-    <section id="upload" class="section">
-        <div class="container">
-            <div class="section-header reveal">
-                <span class="section-tag"><i class="fas fa-magnifying-glass-chart"></i> Detection</span>
-                <h2 class="section-title">Upload & Analyze</h2>
-                <p class="section-subtitle">Upload a chest X-ray image to get an instant AI-powered pneumonia diagnosis</p>
-            </div>
-
-            <div class="upload-grid">
-                <div class="upload-card glass-card reveal">
-                    <div class="drop-zone" id="dropZone">
-                        <div class="drop-zone-content" id="dropContent">
-                            <div class="drop-zone-icon">
-                                <i class="fas fa-cloud-arrow-up"></i>
-                            </div>
-                            <h3>Drop your X-ray here</h3>
-                            <p>or click to browse files</p>
-                            <span class="drop-zone-hint">Supports JPG, PNG — Max 10MB</span>
-                        </div>
-                        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/jpg" hidden>
-                    </div>
-
-                    <div class="preview-area" id="previewArea">
-                        <div class="preview-header">
-                            <span><i class="fas fa-image"></i> Uploaded Image</span>
-                            <button class="btn-remove" id="removeBtn" aria-label="Remove image">
-                                <i class="fas fa-xmark"></i> Remove
-                            </button>
-                        </div>
-                        <div class="preview-image-wrapper">
-                            <img id="previewImg" src="" alt="X-ray preview">
-                        </div>
-                        <div class="preview-info">
-                            <span id="fileName"><i class="fas fa-file-medical"></i> —</span>
-                            <span id="fileSize">—</span>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary btn-predict" id="predictBtn" disabled>
-                        <span>Analyze X-ray</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-
-                <div class="result-card glass-card" id="resultCard">
-                    <div class="result-placeholder">
-                        <i class="fas fa-stethoscope"></i>
-                        <p>Upload an X-ray to see<br>the analysis results here</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading Overlay -->
-            <div class="loading-overlay" id="loadingOverlay">
-                <div class="loading-content">
-                    <div class="loader">
-                        <div class="loader-ring"></div>
-                        <div class="loader-ring inner"></div>
-                        <div class="loader-dot"></div>
-                    </div>
-                    <p class="loading-text">Analyzing chest X-ray...</p>
-                    <span class="loading-step" id="loadingStep">Preprocessing image</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- ==================== WORKFLOW ==================== -->
     <section id="workflow" class="section">
         <div class="container">
@@ -354,7 +288,7 @@
                 <p class="section-subtitle">Understanding the Traditional Machine Learning approach behind the detection system</p>
             </div>
 
-            <div class="model-grid">
+            <div class="model-grid" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto;">
                 <div class="model-info glass-card reveal">
                     <h3 class="model-info-title">
                         <i class="fas fa-gear"></i>
@@ -396,33 +330,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="model-stats reveal">
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
-                        <div class="stat-value" data-value="94.2">0</div>
-                        <div class="stat-label">Accuracy</div>
-                        <div class="stat-bar"><div class="stat-bar-fill" data-width="94.2"></div></div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon"><i class="fas fa-crosshairs"></i></div>
-                        <div class="stat-value" data-value="93.8">0</div>
-                        <div class="stat-label">Precision</div>
-                        <div class="stat-bar"><div class="stat-bar-fill" data-width="93.8"></div></div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon"><i class="fas fa-wave-square"></i></div>
-                        <div class="stat-value" data-value="95.1">0</div>
-                        <div class="stat-label">Recall</div>
-                        <div class="stat-bar"><div class="stat-bar-fill" data-width="95.1"></div></div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="stat-value" data-value="94.4">0</div>
-                        <div class="stat-label">F1-Score</div>
-                        <div class="stat-bar"><div class="stat-bar-fill" data-width="94.4"></div></div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -452,29 +359,13 @@
     (function() {
         'use strict';
 
-        /* ── Elements ── */
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const previewArea = document.getElementById('previewArea');
-        const dropContent = document.getElementById('dropContent');
-        const previewImg = document.getElementById('previewImg');
-        const fileNameEl = document.getElementById('fileName');
-        const fileSizeEl = document.getElementById('fileSize');
-        const removeBtn = document.getElementById('removeBtn');
-        const predictBtn = document.getElementById('predictBtn');
-        const resultCard = document.getElementById('resultCard');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const loadingStep = document.getElementById('loadingStep');
-        const navToggle = document.getElementById('navToggle');
-        const navLinks = document.getElementById('navLinks');
-        const navbar = document.getElementById('navbar');
-
-        let selectedFile = null;
-        let stepInterval = null;
+        var navToggle = document.getElementById('navToggle');
+        var navLinks  = document.getElementById('navLinks');
+        var navbar    = document.getElementById('navbar');
 
         /* ── Toast System ── */
         function showToast(message, type) {
-            type = type || 'error';
+            type = type || 'info';
             var container = document.getElementById('toast-container');
             var toast = document.createElement('div');
             toast.className = 'toast toast-' + type;
@@ -502,14 +393,9 @@
         });
 
         window.addEventListener('scroll', function() {
-            var scrollY = window.scrollY;
-            if (scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
 
-            // Active link
+            // Highlight active section link
             var sections = document.querySelectorAll('section[id]');
             sections.forEach(function(sec) {
                 var top = sec.offsetTop - 120;
@@ -517,7 +403,7 @@
                 var id = sec.getAttribute('id');
                 var link = document.querySelector('.nav-link[data-section="' + id + '"]');
                 if (link) {
-                    if (scrollY >= top && scrollY < bottom) {
+                    if (window.scrollY >= top && window.scrollY < bottom) {
                         document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
                         link.classList.add('active');
                     }
@@ -525,274 +411,25 @@
             });
         });
 
-        // Smooth scroll
+        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(function(a) {
             a.addEventListener('click', function(e) {
                 e.preventDefault();
                 var target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
-
-        /* ── File Upload ── */
-        dropZone.addEventListener('click', function(e) {
-            if (e.target.closest('.btn-remove')) return;
-            fileInput.click();
-        });
-
-        dropZone.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-
-        dropZone.addEventListener('dragleave', function() {
-            dropZone.classList.remove('drag-over');
-        });
-
-        dropZone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            var files = e.dataTransfer.files;
-            if (files.length > 0) handleFile(files[0]);
-        });
-
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) handleFile(this.files[0]);
-        });
-
-        function handleFile(file) {
-            var validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-            if (validTypes.indexOf(file.type) === -1) {
-                showToast('Please upload a JPG or PNG image', 'error');
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                showToast('File size must be under 10MB', 'error');
-                return;
-            }
-
-            selectedFile = file;
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                dropContent.style.display = 'none';
-                previewArea.style.display = 'block';
-                dropZone.classList.add('has-file');
-                fileNameEl.innerHTML = '<i class="fas fa-file-medical"></i> ' + file.name;
-                fileSizeEl.textContent = formatSize(file.size);
-                predictBtn.disabled = false;
-                // Reset result
-                resultCard.innerHTML = '<div class="result-placeholder"><i class="fas fa-stethoscope"></i><p>Upload an X-ray to see<br>the analysis results here</p></div>';
-                resultCard.classList.remove('result-show', 'status-normal', 'status-pneumonia');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
-        removeBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            resetUpload();
-        });
-
-        function resetUpload() {
-            selectedFile = null;
-            fileInput.value = '';
-            previewImg.src = '';
-            previewArea.style.display = 'none';
-            dropContent.style.display = 'flex';
-            dropZone.classList.remove('has-file');
-            predictBtn.disabled = true;
-            resultCard.innerHTML = '<div class="result-placeholder"><i class="fas fa-stethoscope"></i><p>Upload an X-ray to see<br>the analysis results here</p></div>';
-            resultCard.classList.remove('result-show', 'status-normal', 'status-pneumonia');
-        }
-
-        /* ── Prediction ── */
-        predictBtn.addEventListener('click', function() {
-            if (!selectedFile) {
-                showToast('Please upload an X-ray image first', 'info');
-                return;
-            }
-            runPrediction();
-        });
-
-        function runPrediction() {
-            // Show loading
-            loadingOverlay.style.display = 'flex';
-            var steps = [
-                'Preprocessing image',
-                'Applying CLAHE enhancement',
-                'Extracting HOG features',
-                'Computing LBP texture',
-                'Running Random Forest classifier',
-                'Generating prediction result'
-            ];
-            var i = 0;
-            loadingStep.textContent = steps[0];
-            stepInterval = setInterval(function() {
-                i = (i + 1) % steps.length;
-                loadingStep.textContent = steps[i];
-            }, 700);
-
-            var formData = new FormData();
-            formData.append('file', selectedFile);
-
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                clearInterval(stepInterval);
-                setTimeout(function() {
-                    loadingOverlay.style.display = 'none';
-                    if (data.error) {
-                        showToast(data.error, 'error');
-                    } else {
-                        showResult(data.prediction, data.confidence);
-                        showToast('Analysis complete!', 'success');
-                    }
-                }, 500);
-            })
-            .catch(function(err) {
-                clearInterval(stepInterval);
-                loadingOverlay.style.display = 'none';
-                showToast('Connection error. Is the backend server running?', 'error');
-                console.error(err);
-            });
-        }
-
-        function showResult(prediction, confidence) {
-            var isNormal = prediction === 'NORMAL';
-            var color = isNormal ? '#22c55e' : '#ef4444';
-            var circumference = 2 * Math.PI * 52;
-            var offset = circumference * (1 - confidence / 100);
-
-            resultCard.className = 'result-card glass-card result-show ' + (isNormal ? 'status-normal' : 'status-pneumonia');
-            resultCard.innerHTML = '' +
-                '<div class="result-header">' +
-                    '<span class="result-tag"><i class="fas fa-check-double"></i> Analysis Complete</span>' +
-                '</div>' +
-                '<div class="result-status">' +
-                    '<div class="status-icon-wrap" style="--status-color:' + color + '">' +
-                        '<i class="fas fa-' + (isNormal ? 'circle-check' : 'triangle-exclamation') + '"></i>' +
-                    '</div>' +
-                    '<span class="status-label" style="color:' + color + '">' + prediction + '</span>' +
-                '</div>' +
-                '<div class="result-confidence">' +
-                    '<svg class="confidence-svg" viewBox="0 0 120 120">' +
-                        '<circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>' +
-                        '<circle class="confidence-circle" cx="60" cy="60" r="52" fill="none" ' +
-                            'stroke="' + color + '" stroke-width="7" ' +
-                            'stroke-dasharray="' + circumference + '" stroke-dashoffset="' + circumference + '" ' +
-                            'stroke-linecap="round" transform="rotate(-90 60 60)"/>' +
-                        '<text x="60" y="57" text-anchor="middle" fill="white" font-size="22" font-weight="700" font-family="Inter,sans-serif">' + confidence.toFixed(1) + '%</text>' +
-                        '<text x="60" y="73" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="7.5" font-family="\'JetBrains Mono\',monospace" letter-spacing="1">CONFIDENCE</text>' +
-                    '</svg>' +
-                '</div>' +
-                '<div class="result-details">' +
-                    '<div class="result-detail">' +
-                        '<span class="detail-label">Classification</span>' +
-                        '<span class="detail-value">' + prediction + '</span>' +
-                    '</div>' +
-                    '<div class="result-detail">' +
-                        '<span class="detail-label">Model</span>' +
-                        '<span class="detail-value">Random Forest</span>' +
-                    '</div>' +
-                    '<div class="result-detail">' +
-                        '<span class="detail-label">Features</span>' +
-                        '<span class="detail-value">HOG + LBP + Stats</span>' +
-                    '</div>' +
-                '</div>' +
-                '<p class="result-disclaimer">' +
-                    '<i class="fas fa-shield-halved"></i> ' +
-                    'AI-assisted analysis only. Not a substitute for professional medical diagnosis.' +
-                '</p>';
-
-            // Animate the confidence ring
-            setTimeout(function() {
-                var circle = resultCard.querySelector('.confidence-circle');
-                if (circle) {
-                    circle.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)';
-                    circle.style.strokeDashoffset = offset;
-                }
-            }, 100);
-        }
 
         /* ── Scroll Reveal ── */
         var revealObserver = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('revealed');
-                    // Animate stat counters if in model section
-                    if (entry.target.closest('#model')) {
-                        animateCounters(entry.target);
-                    }
                 }
             });
         }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
 
-        document.querySelectorAll('.reveal').forEach(function(el) {
-            revealObserver.observe(el);
-        });
-
-        /* ── Counter Animation ── */
-        var countersAnimated = false;
-        function animateCounters(container) {
-            if (countersAnimated) return;
-            var values = container ? container.querySelectorAll('.stat-value[data-value]') : document.querySelectorAll('.stat-value[data-value]');
-            if (values.length === 0) return;
-            countersAnimated = true;
-            values.forEach(function(el) {
-                var target = parseFloat(el.dataset.value);
-                var duration = 2000;
-                var start = performance.now();
-                function update(now) {
-                    var elapsed = now - start;
-                    var progress = Math.min(elapsed / duration, 1);
-                    var eased = 1 - Math.pow(1 - progress, 3);
-                    el.textContent = (target * eased).toFixed(1) + '%';
-                    if (progress < 1) requestAnimationFrame(update);
-                }
-                requestAnimationFrame(update);
-            });
-            // Animate bars
-            setTimeout(function() {
-                document.querySelectorAll('.stat-bar-fill').forEach(function(bar) {
-                    bar.style.width = bar.dataset.width + '%';
-                });
-            }, 200);
-        }
-
-        /* ── Load Metrics from Backend ── */
-        fetch('/metrics')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data && data.accuracy) {
-                    document.getElementById('heroAccuracy').textContent = data.accuracy + '%';
-                    document.querySelectorAll('.stat-value[data-value]').forEach(function(el) {
-                        var key = el.closest('.stat-card').querySelector('.stat-label').textContent.toLowerCase();
-                        if (key.indexOf('accuracy') !== -1) el.dataset.value = data.accuracy;
-                        else if (key.indexOf('precision') !== -1) el.dataset.value = data.precision;
-                        else if (key.indexOf('recall') !== -1) el.dataset.value = data.recall;
-                        else if (key.indexOf('f1') !== -1) el.dataset.value = data.f1;
-                    });
-                    document.querySelectorAll('.stat-bar-fill').forEach(function(bar) {
-                        var key = bar.closest('.stat-card').querySelector('.stat-label').textContent.toLowerCase();
-                        if (key.indexOf('accuracy') !== -1) bar.dataset.width = data.accuracy;
-                        else if (key.indexOf('precision') !== -1) bar.dataset.width = data.precision;
-                        else if (key.indexOf('recall') !== -1) bar.dataset.width = data.recall;
-                        else if (key.indexOf('f1') !== -1) bar.dataset.width = data.f1;
-                    });
-                }
-            })
-            .catch(function() { /* use defaults */ });
+        document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
 
     })();
     </script>
